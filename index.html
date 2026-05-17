@@ -461,64 +461,84 @@ function rS2(){
 function rResult(){
   const sc=calcAll(),bt=brainType(sc.l3p,sc.l2p,sc.r3p,sc.r2p);
   const stCol=sc.stLv==='低'?'var(--rose)':sc.stLv==='中'?'var(--amber)':'var(--sage)';
-  const qC=(lbl,val,bg,fc)=>`<div class="quad-cell" style="background:${bg};border-color:${fc}20">
-    <div class="quad-lbl" style="color:${fc}">${lbl}</div>
-    <div class="quad-val" style="color:${fc}">${val}<span class="quad-pct">%</span></div></div>`;
-  const bC=(lbl,val,bg,fc)=>`<div class="bal-cell" style="background:${bg}">
-    <div class="bal-lbl" style="color:${fc}">${lbl}</div>
-    <div class="bal-val" style="color:${fc}">${val}%</div></div>`;
-  const sR=(lbl,val,col,note)=>`<div class="score-row">
-    <div class="score-head"><div class="score-name">${lbl}</div><div class="score-note">${note}</div></div>
-    <div class="score-track"><div class="score-fill" data-w="${val}" style="background:${col}"></div></div>
-    <div class="score-num" style="color:${col}">${val}</div></div>`;
+  const qC=(lbl,val,bg,fc)=>`<div style="background:${bg};border:1.5px solid ${fc}20;border-radius:10px;padding:10px 12px">
+    <div style="font-size:10px;color:${fc};font-weight:600;margin-bottom:3px">${lbl}</div>
+    <div style="font-size:22px;font-weight:700;color:${fc}">${val}<span style="font-size:11px;opacity:.8">%</span></div></div>`;
+  const sR=(lbl,val,col,note)=>`<div style="margin-bottom:10px">
+    <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:13px;font-weight:500;color:var(--text)">${lbl}</span>
+      <span style="font-size:11px;color:var(--text-l)">${note}</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px">
+      <div style="flex:1;height:8px;background:#EEE5DC;border-radius:99px;overflow:hidden">
+        <div class="score-fill" data-w="${val}" style="height:100%;background:${col};border-radius:99px"></div>
+      </div>
+      <div style="font-size:14px;font-weight:700;color:${col};min-width:28px;text-align:right">${val}</div>
+    </div></div>`;
   return`
-  <div style="text-align:center;padding:18px 0 8px">
-    <div style="font-size:26px;margin-bottom:8px">✨</div>
-    <div style="font-size:16px;color:var(--text-m);font-family:'Noto Serif JP',serif">診断結果</div>
-    <div style="font-size:14px;color:var(--text-m);margin-top:4px">${S.form.name} 様</div>
-  </div>
+  <div id="result-content" style="background:var(--bg);padding:4px">
+    <!-- 名前・ヘッダー -->
+    <div style="text-align:center;padding:14px 0 10px;background:linear-gradient(135deg,var(--primary),var(--primary-lt));border-radius:14px;margin-bottom:10px;color:white">
+      <div style="font-size:13px;opacity:.9;margin-bottom:4px">B-Brain 脳タイプ診断結果</div>
+      <div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700">${S.form.name} 様</div>
+      <div style="font-size:11px;opacity:.8;margin-top:3px">${new Date().toLocaleDateString('ja-JP')}</div>
+    </div>
 
-  <div id="result-content">
-    <div class="card">
-      <div class="res-type-badge">あなたの脳タイプ</div>
-      <div class="res-type-name">${bt.name}</div>
-      <div class="quad-grid">
+    <!-- 脳タイプカード -->
+    <div style="background:var(--card);border-radius:14px;padding:16px;border:1px solid var(--border);margin-bottom:10px">
+      <div style="display:inline-block;background:linear-gradient(135deg,var(--primary),var(--primary-lt));color:#fff;padding:3px 12px;border-radius:99px;font-size:11px;font-weight:600;margin-bottom:8px">あなたの脳タイプ</div>
+      <div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:700;color:var(--text);margin-bottom:10px;line-height:1.4">${bt.name}</div>
+      <!-- 4象限グリッド -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:8px">
         ${qC('左脳3次元（合理主義）',sc.l3p,'#EEF4FF','var(--sky)')}
         ${qC('右脳3次元（拡張主義）',sc.r3p,'#F0FAF3','var(--sage)')}
         ${qC('左脳2次元（原理主義）',sc.l2p,'#FFF9EE','var(--amber)')}
         ${qC('右脳2次元（温情主義）',sc.r2p,'#FFF3F3','var(--rose)')}
       </div>
-      <div class="balance-row">
-        ${bC('左脳',sc.leftP,'#EEF4FF','var(--sky)')}
-        ${bC('右脳',sc.rightP,'#F0FAF3','var(--sage)')}
-        ${bC('3次元',sc.tdP,'#FFF9EE','var(--amber)')}
-        ${bC('2次元',sc.twdP,'#FFF3F3','var(--rose)')}
+      <!-- バランス行 -->
+      <div style="display:flex;gap:6px;margin-bottom:10px">
+        ${['左脳','右脳','3次元','2次元'].map((l,i)=>{
+          const vals=[sc.leftP,sc.rightP,sc.tdP,sc.twdP];
+          const bgs=['#EEF4FF','#F0FAF3','#FFF9EE','#FFF3F3'];
+          const fcs=['var(--sky)','var(--sage)','var(--amber)','var(--rose)'];
+          return`<div style="flex:1;text-align:center;background:${bgs[i]};border-radius:8px;padding:7px 4px">
+            <div style="font-size:10px;color:${fcs[i]};margin-bottom:2px">${l}</div>
+            <div style="font-size:16px;font-weight:700;color:${fcs[i]}">${vals[i]}%</div></div>`;
+        }).join('')}
       </div>
-      <div class="res-desc">${bt.desc}</div>
-      <div class="advice-box">
-        <div class="advice-lbl">💡 アドバイス</div>
-        <div class="advice-txt">${bt.adv}</div>
+      <!-- 説明 -->
+      <div style="font-size:13px;line-height:1.8;color:var(--text);margin-bottom:8px">${bt.desc}</div>
+      <div style="background:#FFF6EE;border-radius:10px;padding:10px 12px;border:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--primary);font-weight:600;margin-bottom:4px">💡 アドバイス</div>
+        <div style="font-size:13px;line-height:1.7;color:var(--text)">${bt.adv}</div>
       </div>
     </div>
 
-    <div class="card">
-      <div style="font-family:'Noto Serif JP',serif;font-size:18px;font-weight:600;margin-bottom:18px;color:var(--text)">脳活用度・ストレス耐性</div>
+    <!-- 脳活用度カード -->
+    <div style="background:var(--card);border-radius:14px;padding:16px;border:1px solid var(--border)">
+      <div style="font-family:'Noto Serif JP',serif;font-size:15px;font-weight:600;margin-bottom:12px;color:var(--text)">脳活用度・ストレス耐性</div>
       ${sR('人間脳',sc.nG,'var(--sage)','理想値 70以上')}
       ${sR('動物脳プラス',sc.dP,'var(--amber)','理想値 70〜80')}
       ${sR('動物脳マイナス',sc.dM,'var(--rose)','理想値 30以下')}
       ${sR('ストレス耐性',sc.stS,stCol,'判定：'+sc.stLv)}
-      <div class="active-row">
-        <div class="active-lbl">能動脳・受動脳バランス</div>
-        <div class="active-bar-wrap">
-          <div class="active-side" style="color:var(--primary)">能動脳<br><strong>${sc.acP}%</strong></div>
-          <div class="active-bar"><div class="active-fill" data-w="${sc.acP}"></div></div>
-          <div class="active-side" style="color:var(--sage);text-align:right">受動脳<br><strong>${sc.paP}%</strong></div>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="font-size:12px;color:var(--text-m);margin-bottom:7px">能動脳・受動脳バランス</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="font-size:11px;color:var(--primary);min-width:48px">能動脳<br><strong>${sc.acP}%</strong></div>
+          <div style="flex:1;height:10px;background:#EEE5DC;border-radius:99px;overflow:hidden">
+            <div class="active-fill" data-w="${sc.acP}"></div>
+          </div>
+          <div style="font-size:11px;color:var(--sage);min-width:48px;text-align:right">受動脳<br><strong>${sc.paP}%</strong></div>
         </div>
+      </div>
+      <!-- フッター -->
+      <div style="text-align:center;margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="font-size:10px;color:var(--text-l)">開発者　フロンティア75　／　B-Brain 脳タイプ診断</div>
       </div>
     </div>
   </div>
 
-  <div id="email-status" class="email-status">📨 結果を送信中...</div>
+  <div id="email-status" class="email-status" style="margin-top:10px">📨 結果を送信中...</div>
 
   <div class="action-btns">
     <button id="pdf-btn" class="btn btn-g" onclick="downloadPDF()">📄 PDFをダウンロード</button>
@@ -558,19 +578,20 @@ async function downloadPDF(){
   btn.disabled=true; btn.textContent='生成中...';
   try{
     const el=document.getElementById('result-content');
-    const canvas=await html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#FDF6EC'});
+    const canvas=await html2canvas(el,{scale:1.5,useCORS:true,backgroundColor:'#FDF6EC'});
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const pw=pdf.internal.pageSize.getWidth();
     const ph=pdf.internal.pageSize.getHeight();
     const iw=pw, ih=(canvas.height*iw)/canvas.width;
-    let left=ih, pos=0;
-    pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,pos,iw,ih);
-    left-=ph;
-    while(left>0){
-      pos=left-ih; pdf.addPage();
-      pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,pos,iw,ih);
+    const imgData=canvas.toDataURL('image/jpeg',0.82);
+    if(ih<=ph){
+      pdf.addImage(imgData,'JPEG',0,0,iw,ih);
+    } else {
+      let left=ih, pos=0;
+      pdf.addImage(imgData,'JPEG',0,pos,iw,ih);
       left-=ph;
+      while(left>0){pos=left-ih;pdf.addPage();pdf.addImage(imgData,'JPEG',0,pos,iw,ih);left-=ph;}
     }
     const d=new Date().toLocaleDateString('ja-JP').replace(/\//g,'-');
     pdf.save(`BBrain診断_${S.form.name}_${d}.pdf`);
