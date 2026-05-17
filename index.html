@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-Brain 脳タイプ診断</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Serif+JP:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --bg:#FDF6EC;--card:#FFFAF4;--primary:#C96B45;--primary-lt:#E8956A;
+  --sage:#7BAE8E;--amber:#E8B86D;--rose:#E07878;--sky:#5B8EC4;
+  --text:#3A2518;--text-m:#7A5A48;--text-l:#B09080;
+  --border:#EDD5BC;--shadow:0 6px 28px rgba(160,90,50,.10);--r:18px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);min-height:100vh;color:var(--text);
+  background-image:radial-gradient(ellipse 60% 40% at 15% 10%,rgba(232,149,106,.10) 0%,transparent 70%),
+                   radial-gradient(ellipse 50% 40% at 85% 90%,rgba(123,174,142,.10) 0%,transparent 70%);}
+#app{max-width:680px;margin:0 auto;padding:20px 16px 40px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.fade{animation:fadeUp .38s ease both}
+@keyframes popIn{from{transform:scale(.92);opacity:0}to{transform:scale(1);opacity:1}}
+
+/* Progress */
+.prog-wrap{margin-bottom:22px}
+.prog-bar{height:7px;background:#EDD5BC;border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--primary),var(--amber));border-radius:99px;transition:width .5s ease}
+.prog-txt{font-size:12px;color:var(--text-l);text-align:right;margin-top:5px}
+
+/* Cards */
+.card{background:var(--card);border-radius:var(--r);padding:26px 24px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:14px}
+
+/* Badge */
+.badge{display:inline-block;padding:4px 14px;border-radius:99px;font-size:12px;font-weight:600;letter-spacing:.05em;margin-bottom:10px}
+.badge-p{background:var(--primary);color:#fff}
+.badge-s{background:var(--sage);color:#fff}
+
+/* Buttons */
+.btn{display:block;width:100%;padding:15px 20px;border:none;border-radius:99px;font-family:inherit;font-size:15px;font-weight:500;cursor:pointer;transition:all .2s ease;letter-spacing:.03em}
+.btn-p{background:linear-gradient(135deg,var(--primary),var(--primary-lt));color:#fff;box-shadow:0 4px 16px rgba(201,107,69,.3)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 7px 22px rgba(201,107,69,.38)}
+.btn-p:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.btn-g{background:transparent;color:var(--text-m);border:1.5px solid var(--border)}
+.btn-g:hover{border-color:var(--primary-lt);color:var(--primary)}
+.btn-g:disabled{opacity:.4;cursor:not-allowed}
+.nav{display:flex;gap:10px;margin-top:18px}
+.nav .btn{flex:1}
+.nav .btn-g{max-width:110px;flex:none}
+
+/* Welcome */
+.welcome-hero{text-align:center;padding:36px 0 22px}
+.logo{font-family:'Noto Serif JP',serif;font-size:38px;font-weight:700;color:var(--primary);letter-spacing:.06em}
+.logo-sub{font-size:16px;color:var(--text-m);letter-spacing:.12em;margin-top:4px}
+.brain-icon{font-size:52px;margin-bottom:14px;display:block}
+.info-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
+.info-cell{background:var(--bg);border-radius:12px;padding:13px 16px;border:1px solid var(--border)}
+.info-lbl{font-size:11px;color:var(--text-l);margin-bottom:4px}
+.info-val{font-size:21px;font-weight:700;color:var(--primary)}
+.info-unit{font-size:12px;color:var(--text-l);margin-left:3px}
+.tip-box{background:var(--bg);border-radius:12px;padding:14px 16px;border:1px solid var(--border);margin:14px 0}
+.tip-lbl{font-size:12px;color:var(--text-m);margin-bottom:6px}
+.tip-txt{font-size:14px;line-height:1.8;color:var(--text)}
+
+/* Form */
+.form-group{margin-bottom:18px}
+.f-lbl{display:block;font-size:14px;font-weight:500;color:var(--text);margin-bottom:7px}
+.req{color:var(--rose);margin-left:3px;font-size:12px}
+.opt{color:var(--text-l);font-size:12px;font-weight:400;margin-left:4px}
+.f-inp{width:100%;padding:13px 16px;border:2px solid var(--border);border-radius:12px;font-family:inherit;font-size:15px;color:var(--text);background:white;transition:border-color .2s;outline:none}
+.f-inp:focus{border-color:var(--primary-lt)}
+.f-inp::placeholder{color:var(--text-l)}
+.form-err{display:none;color:var(--rose);font-size:13px;margin-bottom:12px;padding:10px 14px;background:#FFF3F3;border-radius:10px;border:1px solid #F5C8C8}
+
+/* Section header */
+.sec-head{margin-bottom:14px}
+.sec-sub{font-size:13px;color:var(--text-m);margin-top:4px;line-height:1.6}
+
+/* Likert */
+.q-item{margin-bottom:26px;padding-bottom:26px;border-bottom:1px solid #F0E0D0}
+.q-item:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0}
+.q-num{font-size:11px;color:var(--text-l);font-weight:600;letter-spacing:.1em;margin-bottom:7px}
+.q-txt{font-size:15px;font-weight:500;line-height:1.7;margin-bottom:14px;color:var(--text)}
+.likert{display:flex;gap:5px}
+.l-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;padding:6px 2px;border-radius:10px;border:none;background:transparent;transition:all .18s ease}
+.l-circle{width:42px;height:42px;border-radius:50%;border:2px solid #DDD0C0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;color:var(--text-l);transition:all .18s ease;background:#fff}
+.l-btn:hover .l-circle{border-color:var(--primary);color:var(--primary);transform:scale(1.05)}
+.l-btn.sel .l-circle{background:var(--primary);border-color:var(--primary);color:#fff;transform:scale(1.12);box-shadow:0 3px 12px rgba(201,107,69,.35)}
+.l-lbl{font-size:9px;color:var(--text-l);text-align:center;line-height:1.35;white-space:pre-line}
+.l-btn.sel .l-lbl{color:var(--primary);font-weight:600}
+.likert-header{display:flex;justify-content:space-between;font-size:11px;color:var(--text-l);margin-bottom:6px;padding:0 4px}
+
+/* Situational */
+.sit-q{font-size:17px;font-weight:500;line-height:1.8;margin-bottom:20px;color:var(--text)}
+.opt-card{padding:15px 18px;border-radius:13px;border:2px solid var(--border);margin-bottom:9px;cursor:pointer;display:flex;align-items:flex-start;gap:12px;background:white;transition:all .18s ease}
+.opt-card:hover{border-color:var(--primary-lt);background:#FFF6EF;transform:translateX(3px)}
+.opt-card.sel{border-color:var(--primary);background:#FFF1E8;animation:popIn .2s ease}
+.opt-lbl{font-size:14px;font-weight:700;color:var(--primary);min-width:22px;padding-top:2px}
+.opt-txt{font-size:14px;line-height:1.7;color:var(--text)}
+.cat-tag{font-size:11px;color:var(--text-l);font-weight:600;letter-spacing:.08em;margin-bottom:8px}
+
+/* Results */
+.res-type-badge{display:inline-block;background:linear-gradient(135deg,var(--primary),var(--primary-lt));color:#fff;padding:5px 18px;border-radius:99px;font-size:13px;font-weight:500;margin-bottom:10px}
+.res-type-name{font-family:'Noto Serif JP',serif;font-size:26px;font-weight:700;line-height:1.45;margin-bottom:14px;color:var(--text)}
+.res-desc{font-size:14px;line-height:1.95;color:var(--text)}
+.quad-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0}
+.quad-cell{border-radius:13px;padding:13px 15px;border:1.5px solid transparent}
+.quad-lbl{font-size:11px;margin-bottom:4px;font-weight:600}
+.quad-val{font-size:26px;font-weight:700}
+.quad-pct{font-size:12px;margin-left:2px;opacity:.8}
+.balance-row{display:flex;gap:8px;margin:10px 0}
+.bal-cell{flex:1;text-align:center;border-radius:12px;padding:10px 8px}
+.bal-lbl{font-size:11px;margin-bottom:3px;opacity:.8}
+.bal-val{font-size:20px;font-weight:700}
+.score-row{margin-bottom:16px}
+.score-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.score-name{font-size:14px;font-weight:500;color:var(--text)}
+.score-note{font-size:11px;color:var(--text-l)}
+.score-track{height:11px;background:#EEE5DC;border-radius:99px;overflow:hidden;position:relative}
+.score-fill{height:100%;border-radius:99px;transition:width .9s cubic-bezier(.34,1.56,.64,1);width:0}
+.score-num{font-size:15px;font-weight:700;text-align:right;margin-top:4px}
+.active-row{margin-top:18px;padding-top:16px;border-top:1px solid var(--border)}
+.active-lbl{font-size:13px;color:var(--text-m);margin-bottom:10px}
+.active-bar-wrap{display:flex;align-items:center;gap:10px}
+.active-side{font-size:12px;min-width:58px;line-height:1.4}
+.active-bar{flex:1;height:13px;background:#EEE5DC;border-radius:99px;overflow:hidden}
+.active-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--primary),var(--amber));transition:width .9s cubic-bezier(.34,1.56,.64,1);width:0}
+.advice-box{background:linear-gradient(135deg,#FFF6EE,#FFFAF5);border-radius:13px;padding:15px 16px;border:1px solid var(--border);margin-top:16px}
+.advice-lbl{font-size:12px;color:var(--primary);font-weight:600;margin-bottom:6px}
+.advice-txt{font-size:14px;line-height:1.8;color:var(--text)}
+
+/* Email status */
+.email-status{text-align:center;font-size:13px;padding:10px;margin-bottom:10px;border-radius:10px;background:var(--bg);border:1px solid var(--border)}
+
+/* Action buttons */
+.action-btns{display:flex;gap:10px;margin-top:14px}
+.action-btns .btn{flex:1;padding:13px}
+
+/* Footer */
+.footer{text-align:center;font-size:11px;color:var(--text-l);padding:22px 0 6px;letter-spacing:.06em}
+
+@media(max-width:420px){
+  .l-circle{width:36px;height:36px;font-size:12px}
+  .l-lbl{font-size:8px}
+  .res-type-name{font-size:22px}
+  .quad-val{font-size:22px}
+  .action-btns{flex-direction:column}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ══════════════════════════════════════════
+// QUESTION DATA
+// ══════════════════════════════════════════
+const Q1=[
+  {id:1, txt:"話をするとき、結論から先に伝えることが多い",type:"L3"},
+  {id:2, txt:"感情よりも事実やデータを判断の基準にする",type:"L3"},
+  {id:3, txt:"根拠のない意見やアドバイスは受け入れにくい",type:"L3"},
+  {id:4, txt:"雑談や世間話より、中身のある会話を好む",type:"L3"},
+  {id:5, txt:"物事の「なぜそうなるのか」を掘り下げて考える",type:"L3"},
+  {id:6, txt:"社会の仕組みや問題の本質について考えることが好きだ",type:"L3"},
+  {id:7, txt:"感情的な話より、論理的な話のほうが理解しやすい",type:"L3"},
+  {id:8, txt:"目標を達成するために、戦略を立てるのが得意だ",type:"L3"},
+  {id:9, txt:"人が感情的になっていても、自分は冷静でいられる",type:"L3"},
+  {id:10,txt:"非効率な進め方を見ると、改善したくなる",type:"L3"},
+  {id:11,txt:"ルールや手順はきちんと守る方だ",type:"L2"},
+  {id:12,txt:"計画通りに物事が進むと安心する",type:"L2"},
+  {id:13,txt:"数値や目標が明確だと、やる気が出る",type:"L2"},
+  {id:14,txt:"急な予定変更があると、対応に戸惑うことがある",type:"L2"},
+  {id:15,txt:"細かいところまで確認してから進める方だ",type:"L2"},
+  {id:16,txt:"曖昧な指示や抽象的な話は苦手だ",type:"L2"},
+  {id:17,txt:"自分のやり方や考えを否定されると、強いストレスを感じる",type:"L2"},
+  {id:18,txt:"スケジュールを守ることをとても大切にしている",type:"L2"},
+  {id:19,txt:"繰り返しの作業でも、丁寧にこなすことができる",type:"L2"},
+  {id:20,txt:"物事を進めるとき、正しい順序を踏むことを重視する",type:"L2"},
+  {id:21,txt:"新しいことに挑戦するとき、ワクワクする",type:"R3"},
+  {id:22,txt:"細かい計画より、まずやってみることを優先する",type:"R3"},
+  {id:23,txt:"人を巻き込んで一緒に動いていくのが好きだ",type:"R3"},
+  {id:24,txt:"同じ毎日が続くと退屈に感じる",type:"R3"},
+  {id:25,txt:"アイデアが次々と浮かんでくることが多い",type:"R3"},
+  {id:26,txt:"自由に動ける環境が自分に合っていると思う",type:"R3"},
+  {id:27,txt:"人から指示されるより、自分で判断して動きたい",type:"R3"},
+  {id:28,txt:"変化の多い環境でも、柔軟に対応できる",type:"R3"},
+  {id:29,txt:"決断するのは早い方だ",type:"R3"},
+  {id:30,txt:"規則や制約が多い場所では、窮屈さを感じる",type:"R3"},
+  {id:31,txt:"人の表情や雰囲気の変化に自然と気づく",type:"R2"},
+  {id:32,txt:"相手の気持ちを考えて、言葉を選ぶ方だ",type:"R2"},
+  {id:33,txt:"困っている人がいると、放っておけない",type:"R2"},
+  {id:34,txt:"場の雰囲気を和ませることが得意だ",type:"R2"},
+  {id:35,txt:"人から頼られると、嬉しいと感じる",type:"R2"},
+  {id:36,txt:"感謝の言葉をもらえると、やる気が出る",type:"R2"},
+  {id:37,txt:"議論よりも、お互いが納得できる落としどころを探す方が好きだ",type:"R2"},
+  {id:38,txt:"初対面の人とも、話しながら自然と打ち解けられる",type:"R2"},
+  {id:39,txt:"理屈や理論より、人の気持ちや関係性を重視する",type:"R2"},
+  {id:40,txt:"特定の人と深くつながることを大切にしている",type:"R2"},
+];
+
+const Q2=[
+  {id:41,cat:"人間脳",type:"nG",
+   txt:"誰かが失敗したとき、あなたはどう感じますか？",
+   opts:["特に何も感じない、自分には関係ない","少し気になるが、自分のことで精一杯だ","何かできることがあれば手伝いたいと思う","自分のこととして一緒に考え、その人の成長につなげたいと思う"],sc:[1,2,3,4]},
+  {id:42,cat:"人間脳",type:"nG",
+   txt:"日常の中で「人の役に立ちたい」という気持ちはどのくらいありますか？",
+   opts:["あまり意識したことがない","機会があればそう思う程度","常にそう思って行動している","自分が成長することで、周りの人も育てていきたいと考えている"],sc:[1,2,3,4]},
+  {id:43,cat:"動物脳プラス",type:"dP",
+   txt:"「やりたい」と思ったとき、どのように動きますか？",
+   opts:["なかなか動き出せないことが多い","じっくり考えてからゆっくり動く","気持ちが高まったら比較的すぐに動ける","気持ちのままに、すぐ行動に移す"],sc:[1,2,3,4]},
+  {id:44,cat:"動物脳プラス",type:"dP",
+   txt:"好きなことや興味のあることに取り組むとき、エネルギーはどうですか？",
+   opts:["それほど熱中することはない","少し気持ちが上がる程度","かなりエネルギーが湧いてくる","寝食を忘れるくらい没頭できる"],sc:[1,2,3,4]},
+  {id:45,cat:"動物脳マイナス",type:"dM",
+   txt:"思い通りにならないとき、どうなりますか？",
+   opts:["落ち着いて対処できる","少しイライラするが、すぐ気持ちを切り替えられる","かなりイライラしたり、不安になったりする","感情的になって、言葉や態度に出てしまうことがある"],sc:[1,2,3,4]},
+  {id:46,cat:"動物脳マイナス",type:"dM",
+   txt:"嫌なことがあったとき、どのような反応が多いですか？",
+   opts:["気持ちの切り替えが早く、引きずらない","少し気になるが、翌日には忘れられる","何日かモヤモヤすることがある","誰かに当たったり、その場から逃げ出したくなったりする"],sc:[1,2,3,4]},
+  {id:47,cat:"ストレス耐性",type:"st",
+   txt:"予期しないトラブルが重なったとき、どうですか？",
+   opts:["パニックになって対処が難しくなる","動揺するが、なんとか対応しようとする","落ち着いて一つずつ対処できる","むしろ冷静になって、最善の判断ができる"],sc:[1,2,3,4]},
+  {id:48,cat:"ストレス耐性",type:"st",
+   txt:"大きなプレッシャーがかかる場面では？",
+   opts:["緊張して実力が出せないことが多い","やや緊張するが、普段に近い状態でいられる","プレッシャーをある程度プラスに変えられる","プレッシャーがあった方がむしろ集中できる"],sc:[1,2,3,4]},
+  {id:49,cat:"能動脳・受動脳",type:"ac",
+   txt:"新しい状況に置かれたとき、あなたはどちらに近いですか？",
+   opts:["まわりをよく観察してから動く","少し様子を見てから行動する","少し情報を集めたらすぐ動く","まず動いて、動きながら状況を把握する"],sc:[1,2,3,4]},
+  {id:50,cat:"能動脳・受動脳",type:"ac",
+   txt:"情報を得るとき、どちらが自然ですか？",
+   opts:["じっくり聞いて、全体を把握してから判断する","ある程度聞いたら、自分なりに整理して考える","気になったことをすぐ調べて、行動に活かす","手元にある情報で判断して、動きながら確認する"],sc:[1,2,3,4]},
+];
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let S={
+  phase:'welcome', g:0, si:0,
+  a1:new Array(40).fill(null),
+  a2:new Array(10).fill(null),
+  form:{name:'',email:'',phone:'',org:''},
+};
+
+// ══════════════════════════════════════════
+// SCORING
+// ══════════════════════════════════════════
+function calcAll(){
+  let l3=0,l2=0,r3=0,r2=0;
+  Q1.forEach((q,i)=>{
+    const v=S.a1[i]; if(v===null)return;
+    if(q.type==='L3')l3+=v; if(q.type==='L2')l2+=v;
+    if(q.type==='R3')r3+=v; if(q.type==='R2')r2+=v;
+  });
+  const tot=l3+l2+r3+r2||1;
+  const pct=v=>Math.round(v/tot*100);
+  const l3p=pct(l3),l2p=pct(l2),r3p=pct(r3),r2p=pct(r2);
+  let nG=0,dP=0,dM=0,st=0,ac=0;
+  Q2.forEach((q,i)=>{
+    const v=S.a2[i]; if(v===null)return;
+    const s=q.sc[v];
+    if(q.type==='nG')nG+=s; if(q.type==='dP')dP+=s;
+    if(q.type==='dM')dM+=s; if(q.type==='st')st+=s;
+    if(q.type==='ac')ac+=s;
+  });
+  const norm=v=>Math.round((v-2)/6*100);
+  const stS=norm(st),acP=norm(ac);
+  return{
+    l3p,l2p,r3p,r2p,
+    leftP:l3p+l2p,rightP:r3p+r2p,
+    tdP:l3p+r3p,twdP:l2p+r2p,
+    nG:norm(nG),dP:norm(dP),dM:norm(dM),
+    stS,stLv:stS<34?'低':stS<67?'中':'高',
+    acP,paP:100-acP,
+  };
+}
+
+function brainType(l3,l2,r3,r2){
+  const lp=l3+l2,rp=r3+r2;
+  const mx=Math.max(l3,l2,r3,r2),mn=Math.min(l3,l2,r3,r2);
+  if(mx-mn<10)return{name:'全脳タイプ',
+    desc:'色々なタイプの人とコミュニケーションが取りやすく、バランスのとれた見方ができる人です。状況や相手に関わらず中立の立場を取れるので、人から嫌われることは少ないでしょう。変幻自在に脳を使い分け、フラットな対応が得意です。',
+    adv:'過去の経験をもとに、得意なことに対して知識や技術を深め活かしましょう。'};
+  if(lp>=55){
+    if(l3>l2*1.4)return{name:'左脳3次元＆右脳2次元優位タイプ',
+      desc:'合理的でビジネスライクな面と、人間関係を重視するという両面を持つタイプです。周囲の人々に気配りをしながら実務的な能力を発揮します。時に合理的な判断と人への配慮の板挟みとなることもあるかもしれません。',
+      adv:'公正さに軸を置いて、周囲への配慮を忘れずに行動すると、細かな葛藤も乗り越えていけるでしょう。'};
+    return{name:'左脳全体＆右脳2次元優位タイプ',
+      desc:'仲間やチームを大切にしながら、何をすべきかを考え計画して実行できる人です。過去のデータや経験から現実的なプランを立案することも得意です。一人ひとりへの気配りもできるので、周囲からの信頼も厚いでしょう。',
+      adv:'専門的な知識を活かしつつ、時に人のサポート役に回ると充実度が増すでしょう。'};
+  }
+  if(rp>=55){
+    if(r3>r2*1.3)return{name:'右脳3次元優位タイプ',
+      desc:'新しいことへの挑戦を恐れず、エネルギッシュに行動できる人です。独創的なアイデアと行動力で周囲を引き込む魅力があります。自由な発想と実行力が最大の強みです。',
+      adv:'自分の良い面を発揮しながらも、計画性を少し意識すると、さらに大きな成果につながります。'};
+    if(r2>r3*1.3)return{name:'右脳2次元優位タイプ',
+      desc:'人の気持ちを察することが得意で、深い人間関係を大切にします。場を和ませる力があり、周囲から頼られるサポーター的な存在です。細やかな気づかいが自然にできる、あたたかい人です。',
+      adv:'時には自分の意見も積極的に伝えながら、その豊かな共感力を最大限に活かしましょう。'};
+    return{name:'右脳全体優位タイプ',
+      desc:'おおらかで、センスが良く、発想力も豊かな行動的なタイプです。サービス精神が旺盛で人と接することが得意なため、人を引きつける人気者です。新事業の立案やイベントの企画などに能力を発揮します。',
+      adv:'自分の良い面を発揮しながらも、他の人からのアドバイスを柔軟に受け入れることで、さらに輝けます。'};
+  }
+  const dom=[{n:'左脳3次元',p:l3},{n:'左脳2次元',p:l2},{n:'右脳3次元',p:r3},{n:'右脳2次元',p:r2}]
+    .sort((a,b)=>b.p-a.p)[0];
+  return{name:dom.n+'優位タイプ',
+    desc:'バランスよく脳を活用しながら、特に'+dom.n+'の特性が際立っています。状況に応じた柔軟な対応ができ、様々な場面で力を発揮できる人です。',
+    adv:'自分の強みをさらに伸ばしながら、他の脳タイプの特性も意識して取り入れていきましょう。'};
+}
+
+// ══════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════
+function prog(){
+  if(S.phase==='welcome'||S.phase==='form')return 0;
+  if(S.phase==='s1')return Math.round(S.g*5/50*100);
+  if(S.phase==='s2')return Math.round((40+S.si)/50*100);
+  return 100;
+}
+function progBar(done){
+  const p=prog();
+  return`<div class="prog-wrap">
+    <div class="prog-bar"><div class="prog-fill" style="width:${p}%"></div></div>
+    <div class="prog-txt">50問中 <strong>${done}</strong> 問完了</div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════
+function render(){
+  const app=document.getElementById('app');
+  let h='';
+  if(S.phase==='welcome')h=rWelcome();
+  else if(S.phase==='form')h=rForm();
+  else if(S.phase==='s1')h=rS1();
+  else if(S.phase==='s2')h=rS2();
+  else h=rResult();
+  app.innerHTML=`<div class="fade">${h}</div>`;
+  if(S.phase==='result'){
+    setTimeout(()=>document.querySelectorAll('[data-w]').forEach(el=>el.style.width=el.dataset.w+'%'),120);
+    sendEmail();
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function rWelcome(){return`
+  <div class="welcome-hero">
+    <span class="brain-icon">🧠</span>
+    <div class="logo">B-Brain</div>
+    <div class="logo-sub">脳タイプ診断テスト</div>
+  </div>
+  <div class="card">
+    <p style="font-size:15px;line-height:1.9;color:var(--text)">
+      私たちはそれぞれ異なる「脳の使い方のクセ」を持っています。<br>
+      思考のパターン、感情の動き、行動の選択…<br><br>
+      この診断では、あなたの脳の<strong>4つの領域</strong>のバランスと、<br><strong>ストレスへの対応力</strong>を測定します。
+    </p>
+    <div class="info-grid">
+      <div class="info-cell"><div class="info-lbl">📝 設問数</div><div><span class="info-val">50</span><span class="info-unit">問</span></div></div>
+      <div class="info-cell"><div class="info-lbl">⏱ 所要時間</div><div><span class="info-val">10</span><span class="info-unit">〜15分</span></div></div>
+      <div class="info-cell"><div class="info-lbl">📊 セクション数</div><div><span class="info-val">2</span><span class="info-unit">セクション</span></div></div>
+      <div class="info-cell"><div class="info-lbl">🧩 診断タイプ</div><div><span class="info-val">8</span><span class="info-unit">タイプ</span></div></div>
+    </div>
+    <div class="tip-box">
+      <div class="tip-lbl">💡 回答のポイント</div>
+      <div class="tip-txt">「こうあるべき」ではなく、<strong>いつもの自分</strong>として答えてください。正解・不正解はありません。</div>
+    </div>
+    <button class="btn btn-p" onclick="goForm()" style="margin-top:6px;">はじめる　→</button>
+  </div>
+  <div class="footer">開発者　フロンティア75</div>`;}
+
+function rForm(){return`
+  <div style="text-align:center;padding:28px 0 16px">
+    <div style="font-size:20px;margin-bottom:8px">📋</div>
+    <div style="font-family:'Noto Serif JP',serif;font-size:20px;font-weight:600;color:var(--text)">基本情報のご入力</div>
+    <div style="font-size:13px;color:var(--text-m);margin-top:6px">診断結果の送付に使用します</div>
+  </div>
+  <div class="card">
+    <div class="form-group">
+      <label class="f-lbl">お名前<span class="req">必須</span></label>
+      <input class="f-inp" id="f-name" type="text" placeholder="山田 太郎" value="${S.form.name}" autocomplete="name">
+    </div>
+    <div class="form-group">
+      <label class="f-lbl">メールアドレス<span class="req">必須</span></label>
+      <input class="f-inp" id="f-email" type="email" placeholder="example@email.com" value="${S.form.email}" autocomplete="email">
+    </div>
+    <div class="form-group">
+      <label class="f-lbl">電話番号<span class="opt">（任意）</span></label>
+      <input class="f-inp" id="f-phone" type="tel" placeholder="090-0000-0000" value="${S.form.phone}" autocomplete="tel">
+    </div>
+    <div class="form-group" style="margin-bottom:6px">
+      <label class="f-lbl">所属<span class="opt">（任意）</span></label>
+      <input class="f-inp" id="f-org" type="text" placeholder="〇〇株式会社 / 無記名でも可" value="${S.form.org}">
+    </div>
+    <div id="form-err" class="form-err"></div>
+    <button class="btn btn-p" onclick="submitForm()" style="margin-top:10px;">診断へ進む　→</button>
+  </div>
+  <div class="footer">開発者　フロンティア75</div>`;}
+
+function rS1(){
+  const gi=S.g,st=gi*5,en=Math.min(st+5,40);
+  const qs=Q1.slice(st,en);
+  const lbls=['まったく\n違う','やや\n違う','どちらでも\nない','やや\n当てはまる','とても\n当てはまる'];
+  const isLast=en>=40,allOK=S.a1.slice(st,en).every(v=>v!==null);
+  const qHtml=qs.map((q,i)=>{
+    const ai=st+i,cur=S.a1[ai];
+    const btns=[1,2,3,4,5].map(v=>`
+      <button class="l-btn ${cur===v?'sel':''}" onclick="pickL1(${ai},${v})">
+        <div class="l-circle">${v}</div>
+        <div class="l-lbl">${lbls[v-1]}</div>
+      </button>`).join('');
+    return`<div class="q-item">
+      <div class="q-num">Q ${q.id}</div>
+      <div class="q-txt">${q.txt}</div>
+      <div class="likert-header"><span>当てはまらない</span><span>当てはまる</span></div>
+      <div class="likert">${btns}</div>
+    </div>`;
+  }).join('');
+  return`
+  ${progBar(st)}
+  <div class="sec-head">
+    <span class="badge badge-p">セクション 1 ／ 脳タイプ診断</span>
+    <div class="sec-sub">各質問について、あなたにどれくらい当てはまるかを選んでください</div>
+  </div>
+  <div class="card">${qHtml}</div>
+  <div class="nav">
+    <button class="btn btn-g" onclick="backS1()">← 戻る</button>
+    <button class="btn btn-p" onclick="${isLast?'toS2()':'nextS1()'}" ${allOK?'':'disabled'}>
+      ${isLast?'セクション 2 へ　→':'次へ　→'}
+    </button>
+  </div>
+  <div class="footer">開発者　フロンティア75</div>`;}
+
+function rS2(){
+  const i=S.si,q=Q2[i],cur=S.a2[i],isLast=i===9;
+  const opts=q.opts.map((o,j)=>`
+    <div class="opt-card ${cur===j?'sel':''}" onclick="pickS2(${j})">
+      <div class="opt-lbl">${String.fromCharCode(97+j)}）</div>
+      <div class="opt-txt">${o}</div>
+    </div>`).join('');
+  return`
+  ${progBar(40+i)}
+  <div class="sec-head">
+    <span class="badge badge-s">セクション 2 ／ 脳活用度・ストレス耐性</span>
+    <div class="sec-sub">最もあなたに近いものを1つ選んでください</div>
+  </div>
+  <div class="card">
+    <div class="cat-tag">Q ${q.id}　／　${q.cat}</div>
+    <div class="sit-q">${q.txt}</div>
+    ${opts}
+  </div>
+  <div class="nav">
+    <button class="btn btn-g" onclick="backS2()">← 戻る</button>
+    <button class="btn btn-p" onclick="${isLast?'toResult()':'nextS2()'}" ${cur!==null?'':'disabled'}>
+      ${isLast?'結果を見る　✨':'次へ　→'}
+    </button>
+  </div>
+  <div class="footer">開発者　フロンティア75</div>`;}
+
+function rResult(){
+  const sc=calcAll(),bt=brainType(sc.l3p,sc.l2p,sc.r3p,sc.r2p);
+  const stCol=sc.stLv==='低'?'var(--rose)':sc.stLv==='中'?'var(--amber)':'var(--sage)';
+  const qC=(lbl,val,bg,fc)=>`<div class="quad-cell" style="background:${bg};border-color:${fc}20">
+    <div class="quad-lbl" style="color:${fc}">${lbl}</div>
+    <div class="quad-val" style="color:${fc}">${val}<span class="quad-pct">%</span></div></div>`;
+  const bC=(lbl,val,bg,fc)=>`<div class="bal-cell" style="background:${bg}">
+    <div class="bal-lbl" style="color:${fc}">${lbl}</div>
+    <div class="bal-val" style="color:${fc}">${val}%</div></div>`;
+  const sR=(lbl,val,col,note)=>`<div class="score-row">
+    <div class="score-head"><div class="score-name">${lbl}</div><div class="score-note">${note}</div></div>
+    <div class="score-track"><div class="score-fill" data-w="${val}" style="background:${col}"></div></div>
+    <div class="score-num" style="color:${col}">${val}</div></div>`;
+  return`
+  <div style="text-align:center;padding:18px 0 8px">
+    <div style="font-size:26px;margin-bottom:8px">✨</div>
+    <div style="font-size:16px;color:var(--text-m);font-family:'Noto Serif JP',serif">診断結果</div>
+    <div style="font-size:14px;color:var(--text-m);margin-top:4px">${S.form.name} 様</div>
+  </div>
+
+  <div id="result-content">
+    <div class="card">
+      <div class="res-type-badge">あなたの脳タイプ</div>
+      <div class="res-type-name">${bt.name}</div>
+      <div class="quad-grid">
+        ${qC('左脳3次元（合理主義）',sc.l3p,'#EEF4FF','var(--sky)')}
+        ${qC('右脳3次元（拡張主義）',sc.r3p,'#F0FAF3','var(--sage)')}
+        ${qC('左脳2次元（原理主義）',sc.l2p,'#FFF9EE','var(--amber)')}
+        ${qC('右脳2次元（温情主義）',sc.r2p,'#FFF3F3','var(--rose)')}
+      </div>
+      <div class="balance-row">
+        ${bC('左脳',sc.leftP,'#EEF4FF','var(--sky)')}
+        ${bC('右脳',sc.rightP,'#F0FAF3','var(--sage)')}
+        ${bC('3次元',sc.tdP,'#FFF9EE','var(--amber)')}
+        ${bC('2次元',sc.twdP,'#FFF3F3','var(--rose)')}
+      </div>
+      <div class="res-desc">${bt.desc}</div>
+      <div class="advice-box">
+        <div class="advice-lbl">💡 アドバイス</div>
+        <div class="advice-txt">${bt.adv}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div style="font-family:'Noto Serif JP',serif;font-size:18px;font-weight:600;margin-bottom:18px;color:var(--text)">脳活用度・ストレス耐性</div>
+      ${sR('人間脳',sc.nG,'var(--sage)','理想値 70以上')}
+      ${sR('動物脳プラス',sc.dP,'var(--amber)','理想値 70〜80')}
+      ${sR('動物脳マイナス',sc.dM,'var(--rose)','理想値 30以下')}
+      ${sR('ストレス耐性',sc.stS,stCol,'判定：'+sc.stLv)}
+      <div class="active-row">
+        <div class="active-lbl">能動脳・受動脳バランス</div>
+        <div class="active-bar-wrap">
+          <div class="active-side" style="color:var(--primary)">能動脳<br><strong>${sc.acP}%</strong></div>
+          <div class="active-bar"><div class="active-fill" data-w="${sc.acP}"></div></div>
+          <div class="active-side" style="color:var(--sage);text-align:right">受動脳<br><strong>${sc.paP}%</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="email-status" class="email-status">📨 結果を送信中...</div>
+
+  <div class="action-btns">
+    <button id="pdf-btn" class="btn btn-g" onclick="downloadPDF()">📄 PDFをダウンロード</button>
+    <button class="btn btn-g" onclick="restart()">もう一度診断する</button>
+  </div>
+  <div class="footer">開発者　フロンティア75　／　B-Brain 脳タイプ診断</div>`;}
+
+// ══════════════════════════════════════════
+// EMAIL & PDF
+// ══════════════════════════════════════════
+async function sendEmail(){
+  const statusEl=document.getElementById('email-status');
+  if(!statusEl)return;
+  try{
+    const sc=calcAll();
+    const bt=brainType(sc.l3p,sc.l2p,sc.r3p,sc.r2p);
+    const res=await fetch('/.netlify/functions/send-email',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({form:S.form,brainType:{name:bt.name,desc:bt.desc,adv:bt.adv},scores:sc}),
+    });
+    const json=await res.json();
+    if(json.success){
+      statusEl.style.background='#F0FAF3';
+      statusEl.style.borderColor='#C0DFC0';
+      statusEl.innerHTML='<span style="color:var(--sage)">✓ 診断結果をお送りしました</span>';
+    }else throw new Error();
+  }catch{
+    statusEl.style.background='#FFF3F3';
+    statusEl.style.borderColor='#F5C8C8';
+    statusEl.innerHTML='<span style="color:var(--rose)">⚠ 送信に失敗しました。PDFをダウンロードしてご利用ください。</span>';
+  }
+}
+
+async function downloadPDF(){
+  const btn=document.getElementById('pdf-btn');
+  btn.disabled=true; btn.textContent='生成中...';
+  try{
+    const el=document.getElementById('result-content');
+    const canvas=await html2canvas(el,{scale:2,useCORS:true,backgroundColor:'#FDF6EC'});
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pw=pdf.internal.pageSize.getWidth();
+    const ph=pdf.internal.pageSize.getHeight();
+    const iw=pw, ih=(canvas.height*iw)/canvas.width;
+    let left=ih, pos=0;
+    pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,pos,iw,ih);
+    left-=ph;
+    while(left>0){
+      pos=left-ih; pdf.addPage();
+      pdf.addImage(canvas.toDataURL('image/png'),'PNG',0,pos,iw,ih);
+      left-=ph;
+    }
+    const d=new Date().toLocaleDateString('ja-JP').replace(/\//g,'-');
+    pdf.save(`BBrain診断_${S.form.name}_${d}.pdf`);
+  }catch(e){alert('PDF生成に失敗しました。');}
+  btn.disabled=false; btn.textContent='📄 PDFをダウンロード';
+}
+
+// ══════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════
+function goForm(){S.phase='form';render();}
+
+function submitForm(){
+  const name=document.getElementById('f-name').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  const org=document.getElementById('f-org').value.trim();
+  const err=document.getElementById('form-err');
+  if(!name){err.textContent='お名前をご入力ください';err.style.display='block';return;}
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent='メールアドレスを正しくご入力ください';err.style.display='block';return;}
+  S.form={name,email,phone,org};
+  S.phase='s1'; S.g=0; render();
+}
+
+function pickL1(i,v){
+  S.a1[i]=v;
+  const gi=S.g,st=gi*5,en=Math.min(st+5,40);
+  const qItems=document.querySelectorAll('.q-item');
+  const qi=i-st;
+  if(qItems[qi])qItems[qi].querySelectorAll('.l-btn').forEach((b,bi)=>b.classList.toggle('sel',bi+1===v));
+  const nb=document.querySelector('.nav .btn-p');
+  if(nb)nb.disabled=!S.a1.slice(st,en).every(x=>x!==null);
+}
+function nextS1(){const st=S.g*5,en=Math.min(st+5,40);if(!S.a1.slice(st,en).every(v=>v!==null))return;S.g++;render();}
+function backS1(){if(S.g>0){S.g--;render();}else{S.phase='form';render();}}
+function toS2(){const st=S.g*5,en=Math.min(st+5,40);if(!S.a1.slice(st,en).every(v=>v!==null))return;S.phase='s2';S.si=0;render();}
+
+function pickS2(j){
+  S.a2[S.si]=j;
+  document.querySelectorAll('.opt-card').forEach((el,i)=>el.classList.toggle('sel',i===j));
+  const nb=document.querySelector('.nav .btn-p');
+  if(nb)nb.disabled=false;
+}
+function nextS2(){if(S.a2[S.si]===null)return;S.si++;render();}
+function backS2(){if(S.si>0){S.si--;render();}else{S.phase='s1';S.g=7;render();}}
+function toResult(){if(S.a2[S.si]===null)return;S.phase='result';render();}
+function restart(){
+  S={phase:'welcome',g:0,si:0,a1:new Array(40).fill(null),a2:new Array(10).fill(null),form:{name:'',email:'',phone:'',org:''}};
+  render();
+}
+
+render();
+</script>
+</body>
+</html>

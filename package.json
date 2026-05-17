@@ -1,0 +1,8 @@
+{
+  "name": "bbrain-test",
+  "version": "1.0.0",
+  "description": "B-Brain 脳タイプ診断テスト",
+  "dependencies": {
+    "nodemailer": "^6.9.7"
+  }
+}
