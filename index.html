@@ -556,10 +556,22 @@ async function sendEmail(){
   try{
     const sc=calcAll();
     const bt=brainType(sc.l3p,sc.l2p,sc.r3p,sc.r2p);
+    // 回答データの整形
+    const lbl=['まったく違う','やや違う','どちらでもない','やや当てはまる','とても当てはまる'];
+    const tNames={L3:'左脳3次元',L2:'左脳2次元',R3:'右脳3次元',R2:'右脳2次元'};
+    const fA1=Q1.map((q,i)=>({
+      id:q.id,txt:q.txt,type:tNames[q.type],
+      ans:S.a1[i],
+      ansLabel:S.a1[i]?`${S.a1[i]}　${lbl[S.a1[i]-1]}`:'未回答'
+    }));
+    const fA2=Q2.map((q,i)=>({
+      id:q.id,cat:q.cat,txt:q.txt,
+      ansLabel:S.a2[i]!==null?`${String.fromCharCode(97+S.a2[i])}）${q.opts[S.a2[i]]}`:'未回答'
+    }));
     const res=await fetch('/.netlify/functions/send-email',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({form:S.form,brainType:{name:bt.name,desc:bt.desc,adv:bt.adv},scores:sc}),
+      body:JSON.stringify({form:S.form,brainType:{name:bt.name,desc:bt.desc,adv:bt.adv},scores:sc,a1:fA1,a2:fA2}),
     });
     const json=await res.json();
     if(json.success){
