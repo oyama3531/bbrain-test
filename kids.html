@@ -494,7 +494,7 @@ function goBack(){
 }
 function toResult(){if(S.answers[S.qi]===null)return;playCelebrate();S.phase='result';render();}
 function restart(){
-  S={phase:'welcome',qi:0,answers:new Array(20).fill(null),form:{name:'',grade:''}};
+  S={phase:'welcome',qi:0,answers:new Array(20).fill(null),form:{name:'',gender:'',grade:'',town:''}};
   render();
 }
 
@@ -562,7 +562,12 @@ async function downloadPDF(){
     <!-- ヘッダー -->
     <div style="background:linear-gradient(135deg,${dom.color},${dom.color}BB);border-radius:12px;padding:10px 16px;color:white;text-align:center;margin-bottom:8px">
       <div style="font-size:11px;opacity:.9">のうタイプしんだん こどもばん　${date}</div>
-      <div style="font-size:18px;font-weight:900;margin-top:2px">${S.form.name} さん　${S.form.gender||''}　${S.form.grade||''}${S.form.town?' ／ '+S.form.town:''}</div>
+      <div style="font-size:20px;font-weight:900;margin-top:2px">${S.form.name} さん</div>
+      <div style="font-size:12px;margin-top:4px;opacity:.9">
+        ${S.form.gender||''}　
+        ${S.form.grade?S.form.grade:''}　
+        ${S.form.town?'📍'+S.form.town:''}
+      </div>
     </div>
 
     <!-- 上段：タイプ結果 ＋ スコア -->
