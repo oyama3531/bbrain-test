@@ -21,7 +21,7 @@ export const handler = async (event) => {
     await transporter.sendMail({
       from: `"B-Brain こどもしんだん" <${process.env.GMAIL_USER}>`,
       to: 'oyama35.31@gmail.com',
-      subject: `【こどもしんだん】${form.name}さん　${new Date().toLocaleDateString('ja-JP')}`,
+      subject: `【こどもしんだん】${form.name}さん（${form.grade||''}${form.gender?'・'+form.gender:''}）　${new Date().toLocaleDateString('ja-JP')}`,
       html: buildHTML(form, result, scores, answers, now),
     });
     return { statusCode: 200, headers, body: JSON.stringify({ success: true }) };
@@ -77,10 +77,25 @@ function buildHTML(form, result, scores, answers, date) {
 
   <!-- 子どもの情報 -->
   <div style="padding:22px 28px;border-bottom:1px solid #EDD5BC;background:#FFF9F0">
-    <div style="font-size:13px;color:#8A6B5A;font-weight:600;margin-bottom:10px;letter-spacing:.08em">受診者情報</div>
-    <div style="font-size:22px;font-weight:900;color:#3A2010">${form.name} さん　${form.gender||''}</div>
-    ${form.grade ? `<div style="font-size:15px;color:#8A6B5A;font-weight:700;margin-top:4px">${form.grade}</div>` : ''}
-    ${form.town ? `<div style="font-size:14px;color:#8A6B5A;font-weight:700;margin-top:2px">📍 ${form.town}</div>` : ''}
+    <div style="font-size:13px;color:#8A6B5A;font-weight:600;margin-bottom:12px;letter-spacing:.08em">受診者情報</div>
+    <table style="width:100%;border-collapse:collapse">
+      <tr>
+        <td style="padding:6px 0;color:#8A6B5A;font-size:13px;width:90px;vertical-align:top">なまえ</td>
+        <td style="padding:6px 0;color:#3A2010;font-size:18px;font-weight:900">${form.name} さん</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;color:#8A6B5A;font-size:13px;vertical-align:top">きみは？</td>
+        <td style="padding:6px 0;color:#3A2010;font-size:15px;font-weight:700">${form.gender||'（こたえなし）'}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;color:#8A6B5A;font-size:13px;vertical-align:top">なんねんせい</td>
+        <td style="padding:6px 0;color:#3A2010;font-size:15px;font-weight:700">${form.grade||'（こたえなし）'}</td>
+      </tr>
+      <tr>
+        <td style="padding:6px 0;color:#8A6B5A;font-size:13px;vertical-align:top">すんでいるまち</td>
+        <td style="padding:6px 0;color:#3A2010;font-size:15px;font-weight:700">${form.town||'（こたえなし）'}</td>
+      </tr>
+    </table>
   </div>
 
   <!-- 診断結果 -->
