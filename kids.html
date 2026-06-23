@@ -384,7 +384,8 @@ function rResult(){
     <!-- ヘッダー -->
     <div style="text-align:center;padding:18px 0 12px;background:linear-gradient(135deg,${dom.color},${dom.color}BB);border-radius:22px;margin-bottom:10px;color:white">
       <div style="font-size:14px;font-weight:700;opacity:.9;margin-bottom:4px">のうタイプしんだん けっか</div>
-      <div style="font-size:20px;font-weight:900">${S.form.name} さん${S.form.grade?'　'+S.form.grade:''}</div>
+      <div style="font-size:18px;font-weight:900">${S.form.name} さん</div>
+      <div style="font-size:13px;opacity:.9;margin-top:3px">${S.form.gender||''}　${S.form.grade||''}${S.form.town?'　📍'+S.form.town:''}</div>
     </div>
 
     <!-- タイプ結果 -->
@@ -461,11 +462,15 @@ function goForm(){S.phase='form';render();}
 function pickGender(g){S.form.gender=g;document.querySelectorAll('.gender-btn').forEach(b=>{b.classList.remove('gender-sel');if(b.textContent.includes(g))b.classList.add('gender-sel');});}
 
 function submitForm(){
-  const name=document.getElementById('f-name').value.trim();
-  const grade=document.getElementById('f-grade').value.trim();
+  const name=(document.getElementById('f-name')||{value:''}).value.trim();
+  const gender=S.form.gender;
+  const grade=(document.getElementById('f-grade')||{value:''}).value.trim();
+  const town=(document.getElementById('f-town')||{value:''}).value.trim();
   const err=document.getElementById('f-err');
   if(!name){err.textContent='なまえを いれてね！';err.style.display='block';return;}
-  S.form={name,grade};
+  if(!gender){err.textContent='きみは？ を えらんでね！';err.style.display='block';return;}
+  if(!grade){err.textContent='なんねんせい か いれてね！';err.style.display='block';return;}
+  S.form={name:name, gender:gender, grade:grade, town:town};
   S.phase='quiz'; S.qi=0; render();
 }
 
