@@ -127,6 +127,51 @@ body{
 <body>
 <div id="app"></div>
 <script>
+
+// ══════════════════════════════════════════
+// サウンドエフェクト
+// ══════════════════════════════════════════
+function playBeep(freq=523, dur=0.15, type='sine'){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
+    osc.connect(gain);gain.connect(ctx.destination);
+    osc.type=type;
+    osc.frequency.setValueAtTime(freq,ctx.currentTime);
+    gain.gain.setValueAtTime(0.25,ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+dur);
+    osc.start(ctx.currentTime);osc.stop(ctx.currentTime+dur);
+  }catch(e){}
+}
+function playSelect(){playBeep(659,0.12);}
+function playNext(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [[523,0],[659,0.1],[784,0.2]].forEach(([f,t])=>{
+      const osc=ctx.createOscillator(),gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.frequency.value=f;
+      gain.gain.setValueAtTime(0.2,ctx.currentTime+t);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.12);
+      osc.start(ctx.currentTime+t);osc.stop(ctx.currentTime+t+0.15);
+    });
+  }catch(e){}
+}
+function playCelebrate(){
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    [[523,0],[659,0.12],[784,0.24],[1047,0.36]].forEach(([f,t])=>{
+      const osc=ctx.createOscillator(),gain=ctx.createGain();
+      osc.connect(gain);gain.connect(ctx.destination);
+      osc.frequency.value=f;
+      gain.gain.setValueAtTime(0.2,ctx.currentTime+t);
+      gain.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+t+0.18);
+      osc.start(ctx.currentTime+t);osc.stop(ctx.currentTime+t+0.2);
+    });
+  }catch(e){}
+}
+
 // ══════════════════════════════════════════
 // 問題データ
 // ══════════════════════════════════════════
@@ -424,7 +469,7 @@ function submitForm(){
   S.phase='quiz'; S.qi=0; render();
 }
 
-function pickAns(v){
+function pickAns(v){playSelect();
   S.answers[S.qi]=v;
   document.querySelectorAll('.ans-btn').forEach((b,i)=>{
     b.classList.remove('selected');
@@ -442,12 +487,12 @@ function pickAns(v){
   if(nb) nb.disabled=false;
 }
 
-function nextQ(){if(S.answers[S.qi]===null)return;S.qi++;render();}
+function nextQ(){if(S.answers[S.qi]===null)return;playNext();S.qi++;render();}
 function goBack(){
   if(S.qi>0){S.qi--;render();}
   else{S.phase='form';render();}
 }
-function toResult(){if(S.answers[S.qi]===null)return;S.phase='result';render();}
+function toResult(){if(S.answers[S.qi]===null)return;playCelebrate();S.phase='result';render();}
 function restart(){
   S={phase:'welcome',qi:0,answers:new Array(20).fill(null),form:{name:'',grade:''}};
   render();
@@ -494,23 +539,99 @@ async function sendEmail(){
 // PDF
 // ══════════════════════════════════════════
 async function downloadPDF(){
-  const el=document.getElementById('result-content');
+  const sc=calcKids();
+  const dom=TYPES[sc.dominant];
+  const typeList=[
+    {key:'L3',emoji:'🧠',name:'かんがえるタイプ',color:'#4A90E2',bg:'#EEF4FF',
+     desc:'「なぜ？」とかんがえるのがとくいなタイプ。じぶんでこたえをみつけるのがだいすき。'},
+    {key:'R3',emoji:'⚡',name:'ぼうけんタイプ',color:'#FF8C42',bg:'#FFF5EE',
+     desc:'あたらしいことにどんどんちょうせんする、ゆうきのあるタイプ。みんなをわくわくさせるちからがある。'},
+    {key:'L2',emoji:'📋',name:'きちんとタイプ',color:'#52C97A',bg:'#F0FFF5',
+     desc:'じゅんばんをまもって、ていねいにすすめるのがとくい。きめたことをやりとげるちからがある。'},
+    {key:'R2',emoji:'💛',name:'なかよしタイプ',color:'#FF6BAF',bg:'#FFF0F8',
+     desc:'ともだちのきもちにきづいて、やさしくできるタイプ。みんなをそっとたすけることができる。'},
+  ];
+  const scores={L3:sc.l3p,R3:sc.r3p,L2:sc.l2p,R2:sc.r2p};
+  const date=new Date().toLocaleDateString('ja-JP');
+
+  // PDF専用DOM作成
+  const wrap=document.createElement('div');
+  wrap.style.cssText='position:fixed;left:-9999px;top:0;width:560px;background:#FFF9F0;font-family:Noto Sans JP,Arial,sans-serif;padding:12px;box-sizing:border-box';
+
+  wrap.innerHTML=`
+    <!-- ヘッダー -->
+    <div style="background:linear-gradient(135deg,${dom.color},${dom.color}BB);border-radius:12px;padding:10px 16px;color:white;text-align:center;margin-bottom:8px">
+      <div style="font-size:11px;opacity:.9">のうタイプしんだん こどもばん　${date}</div>
+      <div style="font-size:18px;font-weight:900;margin-top:2px">${S.form.name} さん　${S.form.gender||''}　${S.form.grade||''}${S.form.town?' ／ '+S.form.town:''}</div>
+    </div>
+
+    <!-- 上段：タイプ結果 ＋ スコア -->
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <!-- 左：タイプ結果 -->
+      <div style="flex:1;background:white;border-radius:12px;padding:10px;border:2px solid ${dom.color}40;text-align:center">
+        <div style="font-size:10px;color:${dom.color};font-weight:700;margin-bottom:4px">あなたの のうタイプ</div>
+        <div style="font-size:32px">${dom.emoji}</div>
+        <div style="font-size:14px;font-weight:900;color:${dom.color};margin:4px 0">${dom.name}</div>
+        <div style="font-size:11px;line-height:1.6;color:#3A2010;font-weight:600">${dom.desc}</div>
+      </div>
+      <!-- 右：スコア -->
+      <div style="flex:1;background:white;border-radius:12px;padding:10px;border:1px solid #FFD093">
+        <div style="font-size:10px;color:#A07050;font-weight:700;margin-bottom:8px">4つのタイプ バランス</div>
+        ${typeList.map(t=>`
+        <div style="margin-bottom:7px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:2px">
+            <span style="font-size:11px;font-weight:700;color:${t.color}">${t.emoji} ${t.name}</span>
+            <span style="font-size:11px;font-weight:900;color:${t.color}">${scores[t.key]}%</span>
+          </div>
+          <div style="height:7px;background:#EEE5DC;border-radius:99px;overflow:hidden">
+            <div style="height:100%;width:${scores[t.key]}%;background:${t.color};border-radius:99px"></div>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>
+
+    <!-- 4タイプ解説（2×2グリッド） -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">
+      ${typeList.map(t=>`
+      <div style="background:${t.bg};border-radius:10px;padding:8px 10px">
+        <div style="font-size:12px;font-weight:900;color:${t.color};margin-bottom:3px">${t.emoji} ${t.name}</div>
+        <div style="font-size:11px;line-height:1.6;color:#3A2010;font-weight:600">${t.desc}</div>
+      </div>`).join('')}
+    </div>
+
+    <!-- 注意書き -->
+    <div style="background:linear-gradient(135deg,#FFF9E0,#FFF0F5);border-radius:10px;padding:8px 12px;border:2px dashed #FFD093;margin-bottom:8px">
+      <div style="font-size:11px;font-weight:900;color:#FF8C42;margin-bottom:3px">🌱 おぼえておいてね</div>
+      <div style="font-size:11px;line-height:1.7;font-weight:600;color:#3A2010">のうのつかいかたは、まいにちかわっていくよ。きょうのけっかは、いまのきみのとくちょうだけど、これがきみの<span style="color:#FF8C42">すべてではない</span>よ。どのタイプにもすてきなところがあるから、これからもちょうせんしてね！✨</div>
+    </div>
+
+    <!-- フッター：QR＋会社情報 -->
+    <div style="display:flex;align-items:center;justify-content:space-between;background:white;border-radius:10px;padding:8px 12px;border:1px solid #FFD093">
+      <div>
+        <div style="font-size:11px;font-weight:900;color:#A07050;margin-bottom:2px">開発：フロンティア75</div>
+        <div style="font-size:11px;color:#FF8C42;font-weight:700">https://frontier75.com/</div>
+      </div>
+      <img src="${'data:image/png;base64,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'}" style="width:64px;height:64px">
+    </div>`;
+
+  document.body.appendChild(wrap);
   try{
-    const canvas=await html2canvas(el,{scale:1.5,useCORS:true,backgroundColor:'#FFF9F0'});
+    const canvas=await html2canvas(wrap,{scale:1.8,useCORS:true,backgroundColor:'#FFF9F0'});
+    document.body.removeChild(wrap);
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const pw=pdf.internal.pageSize.getWidth();
     const ph=pdf.internal.pageSize.getHeight();
-    const iw=pw, ih=(canvas.height*iw)/canvas.width;
-    const imgData=canvas.toDataURL('image/jpeg',0.85);
-    if(ih<=ph){pdf.addImage(imgData,'JPEG',0,0,iw,ih);}
-    else{
-      let left=ih,pos=0;
-      pdf.addImage(imgData,'JPEG',0,pos,iw,ih);left-=ph;
-      while(left>0){pos=left-ih;pdf.addPage();pdf.addImage(imgData,'JPEG',0,pos,iw,ih);left-=ph;}
-    }
+    const margin=10;
+    const iw=pw-margin*2;
+    const ih=(canvas.height*iw)/canvas.width;
+    const imgData=canvas.toDataURL('image/jpeg',0.88);
+    pdf.addImage(imgData,'JPEG',margin,margin,iw,Math.min(ih,ph-margin*2));
     pdf.save(`のうタイプしんだん_${S.form.name}.pdf`);
-  }catch{alert('PDFのほぞんに しっぱいしました。');}
+  }catch(e){
+    if(document.body.contains(wrap))document.body.removeChild(wrap);
+    alert('PDFのほぞんに しっぱいしました。');
+  }
 }
 
 render();
