@@ -56,6 +56,9 @@ body{
 .f-inp::placeholder{color:#CDB090}
 .f-group{margin-bottom:18px}
 .f-err{display:none;color:var(--pink);font-size:14px;font-weight:700;margin-top:6px;padding:8px 14px;background:#FFF0F5;border-radius:12px}
+.gender-btn{flex:1;padding:10px 4px;border:3px solid #FFD093;border-radius:14px;font-family:inherit;font-size:14px;font-weight:700;background:#FFFEF8;cursor:pointer;transition:all .2s;color:var(--text)}
+.gender-btn:hover{border-color:var(--orange);background:#FFF5E0}
+.gender-sel{background:var(--orange)!important;border-color:var(--orange)!important;color:#fff!important}
 
 /* ボタン */
 .btn{display:block;width:100%;padding:16px;border:none;border-radius:99px;font-family:inherit;font-size:17px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.03em}
@@ -166,10 +169,10 @@ const TYPES = {
 // STATE
 // ══════════════════════════════════════════
 let S = {
-  phase: 'welcome', // welcome | form | quiz | result
-  qi: 0,            // 現在の問題インデックス
-  answers: new Array(20).fill(null), // 0=ちがう,1=どちらかな,2=はい
-  form: {name:'', grade:''},
+  phase: 'welcome',
+  qi: 0,
+  answers: new Array(20).fill(null),
+  form: {name:'', gender:'', grade:'', town:''},
 };
 
 // ══════════════════════════════════════════
@@ -246,7 +249,7 @@ function rWelcome(){return`
     </div>
     <button class="btn btn-start" onclick="goForm()">はじめる！　🚀</button>
   </div>
-  <div class="footer">開発者　フロンティア75</div>`;}
+  <div class="footer">開発：フロンティア75　<a href="https://frontier75.com/" style="color:var(--orange)">frontier75.com</a></div>`;}
 
 function rForm(){return`
   <div style="text-align:center;padding:20px 0 14px">
@@ -259,13 +262,25 @@ function rForm(){return`
       <input class="f-inp" id="f-name" type="text" placeholder="やまだ たろう" value="${S.form.name}">
     </div>
     <div class="f-group">
-      <label class="f-lbl">なんねんせい？<span class="opt">（なくてもいい）</span></label>
-      <input class="f-inp" id="f-grade" type="text" placeholder="1ねんせい" value="${S.form.grade}">
+      <label class="f-lbl">きみは？<span class="req">ひっす</span></label>
+      <div style="display:flex;gap:10px;margin-top:4px">
+        <button class="gender-btn ${S.form.gender==='おんな'?'gender-sel':''}" onclick="pickGender('おんな')">👧 おんな</button>
+        <button class="gender-btn ${S.form.gender==='おとこ'?'gender-sel':''}" onclick="pickGender('おとこ')">👦 おとこ</button>
+        <button class="gender-btn ${S.form.gender==='こたえたくない'?'gender-sel':''}" onclick="pickGender('こたえたくない')">🤐 こたえたくない</button>
+      </div>
+    </div>
+    <div class="f-group">
+      <label class="f-lbl">なんねんせい？<span class="req">ひっす</span></label>
+      <input class="f-inp" id="f-grade" type="text" placeholder="れい：1ねんせい" value="${S.form.grade}">
+    </div>
+    <div class="f-group">
+      <label class="f-lbl">すんでいる まちの なまえ<span class="opt">（なくてもいい）</span></label>
+      <input class="f-inp" id="f-town" type="text" placeholder="れい：しんじゅく" value="${S.form.town}">
     </div>
     <div id="f-err" class="f-err"></div>
     <button class="btn btn-start" onclick="submitForm()" style="margin-top:8px">しんだんスタート！　⭐</button>
   </div>
-  <div class="footer">開発者　フロンティア75</div>`;}
+  <div class="footer">開発：フロンティア75</div>`;}
 
 function rQuiz(){
   const i=S.qi, q=KQ[i], cur=S.answers[i];
@@ -347,6 +362,47 @@ function rResult(){
     </div>
   </div>
 
+
+    <!-- 4タイプ解説 -->
+    <div class="card" style="margin-top:8px">
+      <div style="font-size:16px;font-weight:900;margin-bottom:14px;color:var(--text)">4つの のうタイプって？</div>
+      <div style="margin-bottom:12px;padding:12px;background:#EEF4FF;border-radius:14px">
+        <div style="font-size:16px;font-weight:900;color:#4A90E2;margin-bottom:5px">🧠 かんがえるタイプ</div>
+        <div style="font-size:14px;line-height:1.8;font-weight:700;color:var(--text)">「なぜ？」「どうして？」とかんがえるのがとくいなタイプだよ。じぶんでこたえをみつけるのがだいすきなんだ。</div>
+      </div>
+      <div style="margin-bottom:12px;padding:12px;background:#F0FFF5;border-radius:14px">
+        <div style="font-size:16px;font-weight:900;color:#52C97A;margin-bottom:5px">📋 きちんとタイプ</div>
+        <div style="font-size:14px;line-height:1.8;font-weight:700;color:var(--text)">じゅんばんをまもって、ていねいにすすめるのがとくいなタイプだよ。きめたことをちゃんとやりとげるちからがあるよ。</div>
+      </div>
+      <div style="margin-bottom:12px;padding:12px;background:#FFF5EE;border-radius:14px">
+        <div style="font-size:16px;font-weight:900;color:#FF8C42;margin-bottom:5px">⚡ ぼうけんタイプ</div>
+        <div style="font-size:14px;line-height:1.8;font-weight:700;color:var(--text)">あたらしいことにどんどんちょうせんする、ゆうきのあるタイプだよ。まわりのひとをわくわくさせるちからがあるよ。</div>
+      </div>
+      <div style="padding:12px;background:#FFF0F8;border-radius:14px">
+        <div style="font-size:16px;font-weight:900;color:#FF6BAF;margin-bottom:5px">💛 なかよしタイプ</div>
+        <div style="font-size:14px;line-height:1.8;font-weight:700;color:var(--text)">ともだちのきもちにきづいて、やさしくできるタイプだよ。みんながなかよくすごせるように、そっとたすけることができるよ。</div>
+      </div>
+    </div>
+
+    <!-- 注意書き -->
+    <div style="background:linear-gradient(135deg,#FFF9E0,#FFF0F5);border-radius:20px;padding:18px;border:2px dashed #FFD093;margin:8px 0">
+      <div style="font-size:16px;font-weight:900;color:var(--orange);margin-bottom:8px">🌱 おぼえておいてね</div>
+      <div style="font-size:14px;line-height:1.9;font-weight:700;color:var(--text)">
+        のうのつかいかたは、まいにちかわっていくよ。<br>
+        きょうのけっかは、いまのきみのとくちょうだけど、<br>
+        これがきみの<span style="color:var(--orange)">すべてではない</span>よ。<br><br>
+        どのタイプにも、すてきなところがあるから、<br>
+        これからもいろんなことにちょうせんしてね！ ✨
+      </div>
+    </div>
+
+    <!-- 会社情報・QR -->
+    <div style="background:white;border-radius:20px;padding:16px;border:2px solid #FFD093;margin:8px 0;text-align:center">
+      <div style="font-size:12px;color:#A07050;margin-bottom:10px;font-weight:700">開発：フロンティア75</div>
+      <img src='data:image/png;base64,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' style="width:100px;height:100px;display:block;margin:0 auto 8px" alt="QRコード">
+      <a href="https://frontier75.com/" style="font-size:13px;color:var(--orange);font-weight:700;text-decoration:none">https://frontier75.com/</a>
+    </div>
+
   <div id="kids-email-st" class="email-st">📨 けっかを おくっています…</div>
 
   <button class="btn pdf-btn" onclick="downloadPDF()" style="margin-top:4px">📄 PDFをほぞんする</button>
@@ -357,6 +413,7 @@ function rResult(){
 // アクション
 // ══════════════════════════════════════════
 function goForm(){S.phase='form';render();}
+function pickGender(g){S.form.gender=g;document.querySelectorAll('.gender-btn').forEach(b=>{b.classList.remove('gender-sel');if(b.textContent.includes(g))b.classList.add('gender-sel');});}
 
 function submitForm(){
   const name=document.getElementById('f-name').value.trim();
