@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>のうタイプしんだん こどもばん</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --blue:#4A90E2;--green:#52C97A;--orange:#FF8C42;--pink:#FF6BAF;
+  --yellow:#FFD93D;--bg:#FFF9F0;--card:#FFFFFF;--text:#3A2010;
+  --shadow:0 8px 32px rgba(255,140,60,.15);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:linear-gradient(160deg,#FFF9E6 0%,#FFE8CC 60%,#FFD6E8 100%);
+  min-height:100vh;color:var(--text);
+}
+#app{max-width:600px;margin:0 auto;padding:16px 14px 40px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+@keyframes popIn{from{transform:scale(.85);opacity:0}to{transform:scale(1);opacity:1}}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes celebrate{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+.fade{animation:fadeUp .4s ease both}
+
+/* カード */
+.card{background:var(--card);border-radius:24px;padding:22px 20px;box-shadow:var(--shadow);margin-bottom:14px}
+
+/* プログレス */
+.prog-wrap{margin-bottom:20px;text-align:center}
+.stars{display:flex;justify-content:center;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.star{font-size:20px;transition:all .3s ease}
+.prog-txt{font-size:14px;color:#A07050;font-weight:700}
+
+/* ウェルカム */
+.hero{text-align:center;padding:28px 0 18px}
+.hero-emoji{font-size:72px;display:block;animation:bounce 2s infinite}
+.hero-title{font-size:28px;font-weight:900;color:var(--orange);margin:12px 0 6px;line-height:1.3}
+.hero-sub{font-size:16px;color:#A07050;font-weight:700}
+.info-row{display:flex;gap:10px;margin:16px 0}
+.info-box{flex:1;background:#FFF5E0;border-radius:16px;padding:12px 8px;text-align:center;border:2px solid #FFD093}
+.info-box .num{font-size:26px;font-weight:900;color:var(--orange)}
+.info-box .lbl{font-size:11px;color:#A07050;margin-top:2px;font-weight:700}
+
+/* フォーム */
+.f-lbl{font-size:17px;font-weight:700;color:var(--text);margin-bottom:8px;display:block}
+.req{font-size:12px;color:var(--pink);margin-left:4px;font-weight:700}
+.opt{font-size:12px;color:#B09080;margin-left:4px}
+.f-inp{width:100%;padding:14px 18px;border:3px solid #FFD093;border-radius:16px;font-family:inherit;font-size:17px;color:var(--text);background:#FFFEF8;outline:none;transition:border-color .2s}
+.f-inp:focus{border-color:var(--orange)}
+.f-inp::placeholder{color:#CDB090}
+.f-group{margin-bottom:18px}
+.f-err{display:none;color:var(--pink);font-size:14px;font-weight:700;margin-top:6px;padding:8px 14px;background:#FFF0F5;border-radius:12px}
+
+/* ボタン */
+.btn{display:block;width:100%;padding:16px;border:none;border-radius:99px;font-family:inherit;font-size:17px;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.03em}
+.btn-start{background:linear-gradient(135deg,var(--orange),var(--pink));color:#fff;box-shadow:0 6px 20px rgba(255,107,175,.35);font-size:20px;padding:18px}
+.btn-start:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,107,175,.45)}
+.btn-back{background:#FFF0E0;color:#A07050;border:2px solid #FFD093;padding:12px;font-size:15px;max-width:100px}
+
+/* 問題画面 */
+.q-num-badge{display:inline-block;background:linear-gradient(135deg,var(--orange),var(--yellow));color:#fff;padding:5px 18px;border-radius:99px;font-size:14px;font-weight:900;margin-bottom:12px}
+.q-emoji{font-size:56px;display:block;text-align:center;margin:10px 0;animation:bounce 2s infinite}
+.q-txt{font-size:20px;font-weight:700;line-height:1.7;text-align:center;color:var(--text);margin-bottom:22px}
+.ans-btns{display:flex;flex-direction:column;gap:12px}
+.ans-btn{padding:18px 20px;border-radius:20px;border:3px solid transparent;cursor:pointer;font-family:inherit;font-size:18px;font-weight:700;display:flex;align-items:center;gap:14px;transition:all .2s;text-align:left}
+.ans-btn:hover{transform:translateX(6px)}
+.ans-btn.yes{background:#FFF9D6;border-color:#FFD93D;color:#7A5A00}
+.ans-btn.yes:hover{background:#FFD93D;color:#5A3A00}
+.ans-btn.maybe{background:#E8F4FF;border-color:#87CEEB;color:#1A5080}
+.ans-btn.maybe:hover{background:#87CEEB;color:#0A2840}
+.ans-btn.no{background:#FFF0F5;border-color:#FFB6D3;color:#80204A}
+.ans-btn.no:hover{background:#FFB6D3;color:#501020}
+.ans-btn.selected{transform:scale(1.02);box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.ans-btn.yes.selected{background:#FFD93D;color:#5A3A00}
+.ans-btn.maybe.selected{background:#87CEEB;color:#0A2840}
+.ans-btn.no.selected{background:#FFB6D3;color:#501020}
+.ans-emoji{font-size:28px;min-width:36px}
+.nav-row{display:flex;gap:10px;margin-top:16px}
+.nav-row .btn{flex:1}
+.btn-next{background:linear-gradient(135deg,var(--orange),var(--yellow));color:#fff;box-shadow:0 4px 16px rgba(255,140,60,.3)}
+.btn-next:disabled{opacity:.4;cursor:not-allowed;transform:none;box-shadow:none}
+
+/* 結果 */
+.result-wrap{text-align:center}
+.result-celebrate{font-size:48px;animation:bounce 1s infinite}
+.result-title{font-size:22px;font-weight:900;color:var(--orange);margin:10px 0 4px}
+.result-name{font-size:18px;color:#A07050;font-weight:700;margin-bottom:16px}
+.type-card{border-radius:24px;padding:22px;margin:14px 0;animation:celebrate 1s ease infinite}
+.type-emoji{font-size:64px;display:block;margin-bottom:10px;animation:bounce 1.5s infinite}
+.type-name{font-size:26px;font-weight:900;margin-bottom:10px}
+.type-desc{font-size:16px;line-height:1.8;font-weight:700}
+.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0}
+.score-cell{border-radius:16px;padding:12px 10px;text-align:center}
+.score-cell .sc-emoji{font-size:24px;display:block;margin-bottom:4px}
+.score-cell .sc-name{font-size:12px;font-weight:700;margin-bottom:5px}
+.score-cell .sc-bar-wrap{height:8px;background:rgba(0,0,0,.1);border-radius:99px;overflow:hidden;margin:4px 0}
+.score-cell .sc-bar{height:100%;border-radius:99px;transition:width 1s ease}
+.score-cell .sc-val{font-size:14px;font-weight:900}
+.advice-box{background:linear-gradient(135deg,#FFF5E0,#FFF0F5);border-radius:20px;padding:16px;border:2px solid #FFD093;margin:14px 0}
+.advice-ttl{font-size:14px;font-weight:900;color:var(--orange);margin-bottom:8px}
+.advice-txt{font-size:15px;line-height:1.8;font-weight:700;color:var(--text)}
+.pdf-btn{background:linear-gradient(135deg,#52C97A,#4ECDC4);color:#fff;box-shadow:0 4px 16px rgba(78,205,196,.3);font-size:17px;margin-top:6px}
+.retry-btn{background:#FFF0E0;color:#A07050;border:2px solid #FFD093;font-size:16px;margin-top:8px}
+
+/* メールステータス */
+.email-st{text-align:center;font-size:14px;font-weight:700;padding:10px;border-radius:14px;background:#FFF9F0;border:2px solid #FFD093;margin:10px 0;color:#A07050}
+
+/* フッター */
+.footer{text-align:center;font-size:11px;color:#C09070;padding:20px 0 4px}
+
+@media(max-width:400px){
+  .q-txt{font-size:18px}
+  .ans-btn{font-size:16px;padding:14px 16px}
+  .hero-title{font-size:24px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+// ══════════════════════════════════════════
+// 問題データ
+// ══════════════════════════════════════════
+const KQ = [
+  // 🧠 かんがえるタイプ (L3) × 5
+  {id:1, emoji:'🎮', txt:'ゲームをするとき、「どうしたら かてるかな」とよく かんがえる', type:'L3'},
+  {id:2, emoji:'🔍', txt:'「なぜ？」「どうして？」と よくきく', type:'L3'},
+  {id:3, emoji:'💡', txt:'なぞなぞや パズルが すき', type:'L3'},
+  {id:4, emoji:'🎯', txt:'あそびに いくとき、なにをするか かんがえてから あそびに いく', type:'L3'},
+  {id:5, emoji:'💡', txt:'どうしたら もっと おもしろくなるか、かんがえながら あそぶ', type:'L3'},
+  // 📋 きちんとタイプ (L2) × 5
+  {id:6, emoji:'📦', txt:'つかったものを もとのばしょに もどす', type:'L2'},
+  {id:7, emoji:'⏰', txt:'やくそくの じかんを まもる', type:'L2'},
+  {id:8, emoji:'📝', txt:'しゅくだいや べんきょうを きちんとやる', type:'L2'},
+  {id:9, emoji:'🗂️', txt:'じぶんのものを きちんと かたづける', type:'L2'},
+  {id:10,emoji:'📅', txt:'よていを たてて、そのとおりに すすめるのが すき', type:'L2'},
+  // ⚡ ぼうけんタイプ (R3) × 5
+  {id:11,emoji:'🌟', txt:'あたらしい あそびを かんがえるのが すき', type:'R3'},
+  {id:12,emoji:'👫', txt:'おともだちを さそって あそぶのが すき', type:'R3'},
+  {id:13,emoji:'🏃', txt:'まず やってみて、あとで かんがえる', type:'R3'},
+  {id:14,emoji:'🎪', txt:'はじめていく ばしょや あたらしいことが たのしみ', type:'R3'},
+  {id:15,emoji:'✨', txt:'いろんなことを いっぺんに やってみたい', type:'R3'},
+  // 💛 なかよしタイプ (R2) × 5
+  {id:16,emoji:'🥺', txt:'ともだちが かなしいと、じぶんも かなしくなる', type:'R2'},
+  {id:17,emoji:'🤝', txt:'だれかが こまっていたら、たすけたくなる', type:'R2'},
+  {id:18,emoji:'😊', txt:'みんなが なかよくしていると うれしい', type:'R2'},
+  {id:19,emoji:'🫶', txt:'たのまれると うれしい', type:'R2'},
+  {id:20,emoji:'🌈', txt:'みんなが よろこぶと、じぶんも うれしい', type:'R2'},
+];
+
+// タイプ定義
+const TYPES = {
+  L3:{name:'かんがえるタイプ', emoji:'🧠', color:'#4A90E2', bg:'#EEF4FF', desc:'「なぜ？」とかんがえるのが とくいな、かしこい タイプだよ！むずかしい もんだいでも あきらめずに とりくめるね。'},
+  L2:{name:'きちんとタイプ',   emoji:'📋', color:'#52C97A', bg:'#F0FFF5', desc:'ルールをまもって、ていねいに できる、しっかり タイプだよ！ちゃんと じゅんばんどおりに すすめるのが とくいだね。'},
+  R3:{name:'ぼうけんタイプ',   emoji:'⚡', color:'#FF8C42', bg:'#FFF5EE', desc:'あたらしいことに どんどん ちょうせんする、ゆうき タイプだよ！みんなを たのしませる アイデアが どんどん でてくるね。'},
+  R2:{name:'なかよしタイプ',   emoji:'💛', color:'#FF6BAF', bg:'#FFF0F8', desc:'みんなの きもちが わかる、やさしい タイプだよ！ともだちの こころに きづいて、なかよくできるね。'},
+};
+
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+let S = {
+  phase: 'welcome', // welcome | form | quiz | result
+  qi: 0,            // 現在の問題インデックス
+  answers: new Array(20).fill(null), // 0=ちがう,1=どちらかな,2=はい
+  form: {name:'', grade:''},
+};
+
+// ══════════════════════════════════════════
+// スコア計算
+// ══════════════════════════════════════════
+function calcKids() {
+  let l3=0,l2=0,r3=0,r2=0;
+  KQ.forEach((q,i)=>{
+    const v = S.answers[i];
+    if(v===null) return;
+    const score = [1,2,3][v]; // 0→1点, 1→2点, 2→3点
+    if(q.type==='L3') l3+=score;
+    if(q.type==='L2') l2+=score;
+    if(q.type==='R3') r3+=score;
+    if(q.type==='R2') r2+=score;
+  });
+  // 各5問×最大3点=15点満点 → %に変換
+  const toP = v => Math.round((v-5)/10*100); // 5〜15 → 0〜100%
+  return {
+    l3p:toP(l3), l2p:toP(l2), r3p:toP(r3), r2p:toP(r2),
+    dominant: ['L3','L2','R3','R2'].reduce((a,t,i)=>{
+      const vs={L3:l3,L2:l2,R3:r3,R2:r2};
+      return vs[t]>vs[a]?t:a;
+    },'L3'),
+  };
+}
+
+// ══════════════════════════════════════════
+// 描画
+// ══════════════════════════════════════════
+function render() {
+  const app = document.getElementById('app');
+  let h = '';
+  if(S.phase==='welcome') h=rWelcome();
+  else if(S.phase==='form') h=rForm();
+  else if(S.phase==='quiz') h=rQuiz();
+  else h=rResult();
+  app.innerHTML=`<div class="fade">${h}</div>`;
+  if(S.phase==='result'){
+    setTimeout(()=>{
+      document.querySelectorAll('.sc-bar[data-w]').forEach(el=>el.style.width=el.dataset.w+'%');
+    },200);
+    sendEmail();
+  }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function starProgress() {
+  const total=20, done=S.qi;
+  const stars=Array.from({length:total},(_,i)=>
+    `<span class="star">${i<done?'⭐':'☆'}</span>`).join('');
+  return`<div class="prog-wrap">
+    <div class="stars">${stars}</div>
+    <div class="prog-txt">${done} / ${total} もん おわったよ！</div>
+  </div>`;
+}
+
+function rWelcome(){return`
+  <div class="hero">
+    <span class="hero-emoji">🧠</span>
+    <div class="hero-title">のうタイプしんだん<br>こどもばん</div>
+    <div class="hero-sub">きみの のうは どんな タイプかな？</div>
+  </div>
+  <div class="card">
+    <p style="font-size:17px;line-height:1.9;font-weight:700;color:var(--text);margin-bottom:16px">
+      20この しつもんに こたえると、<br>
+      きみの とくいな ことが わかるよ！<br>
+      <span style="color:var(--orange)">こころで かんじたことを えらんでね。</span>
+    </p>
+    <div class="info-row">
+      <div class="info-box"><div class="num">20</div><div class="lbl">もん</div></div>
+      <div class="info-box"><div class="num">⭐</div><div class="lbl">たのしい</div></div>
+      <div class="info-box"><div class="num">🎯</div><div class="lbl">かんたん</div></div>
+    </div>
+    <button class="btn btn-start" onclick="goForm()">はじめる！　🚀</button>
+  </div>
+  <div class="footer">開発者　フロンティア75</div>`;}
+
+function rForm(){return`
+  <div style="text-align:center;padding:20px 0 14px">
+    <span style="font-size:40px">📋</span>
+    <div style="font-size:20px;font-weight:900;color:var(--orange);margin-top:8px">まず おしえてね！</div>
+  </div>
+  <div class="card">
+    <div class="f-group">
+      <label class="f-lbl">きみの なまえ<span class="req">ひっす</span></label>
+      <input class="f-inp" id="f-name" type="text" placeholder="やまだ たろう" value="${S.form.name}">
+    </div>
+    <div class="f-group">
+      <label class="f-lbl">なんねんせい？<span class="opt">（なくてもいい）</span></label>
+      <input class="f-inp" id="f-grade" type="text" placeholder="1ねんせい" value="${S.form.grade}">
+    </div>
+    <div id="f-err" class="f-err"></div>
+    <button class="btn btn-start" onclick="submitForm()" style="margin-top:8px">しんだんスタート！　⭐</button>
+  </div>
+  <div class="footer">開発者　フロンティア75</div>`;}
+
+function rQuiz(){
+  const i=S.qi, q=KQ[i], cur=S.answers[i];
+  const isLast=i===19;
+  const btnClass=(v)=>`ans-btn ${v===0?'no':v===1?'maybe':'yes'}${cur===v?' selected':''}`;
+  return`
+  ${starProgress()}
+  <div class="card">
+    <div class="q-num-badge">もんだい ${q.id}／20</div>
+    <span class="q-emoji">${q.emoji}</span>
+    <div class="q-txt">${q.txt}</div>
+    <div class="ans-btns">
+      <button class="${btnClass(2)}" onclick="pickAns(2)">
+        <span class="ans-emoji">😊</span>
+        <span>はい！　そうだよ！</span>
+      </button>
+      <button class="${btnClass(1)}" onclick="pickAns(1)">
+        <span class="ans-emoji">🤔</span>
+        <span>どちらかな…</span>
+      </button>
+      <button class="${btnClass(0)}" onclick="pickAns(0)">
+        <span class="ans-emoji">😶</span>
+        <span>ちがうかな</span>
+      </button>
+    </div>
+  </div>
+  <div class="nav-row">
+    <button class="btn btn-back" onclick="goBack()">← もどる</button>
+    <button class="btn btn-next" onclick="${isLast?'toResult()':'nextQ()'}" ${cur!==null?'':'disabled'}>
+      ${isLast?'けっかをみる！ 🎉':'つぎへ →'}
+    </button>
+  </div>
+  <div class="footer">開発者　フロンティア75</div>`;}
+
+function rResult(){
+  const sc=calcKids();
+  const dom=TYPES[sc.dominant];
+  const scores=[
+    {key:'L3',label:'かんがえる',val:sc.l3p},
+    {key:'R3',label:'ぼうけん',  val:sc.r3p},
+    {key:'L2',label:'きちんと',  val:sc.l2p},
+    {key:'R2',label:'なかよし',  val:sc.r2p},
+  ];
+  const scoreCells=scores.map(s=>{
+    const t=TYPES[s.key];
+    return`<div class="score-cell" style="background:${t.bg};border:2px solid ${t.color}20">
+      <span class="sc-emoji">${t.emoji}</span>
+      <div class="sc-name" style="color:${t.color}">${s.label}</div>
+      <div class="sc-bar-wrap"><div class="sc-bar" data-w="${s.val}" style="background:${t.color}"></div></div>
+      <div class="sc-val" style="color:${t.color}">${s.val}%</div>
+    </div>`;
+  }).join('');
+
+  return`
+  <div id="result-content">
+    <!-- ヘッダー -->
+    <div style="text-align:center;padding:18px 0 12px;background:linear-gradient(135deg,${dom.color},${dom.color}BB);border-radius:22px;margin-bottom:10px;color:white">
+      <div style="font-size:14px;font-weight:700;opacity:.9;margin-bottom:4px">のうタイプしんだん けっか</div>
+      <div style="font-size:20px;font-weight:900">${S.form.name} さん${S.form.grade?'　'+S.form.grade:''}</div>
+    </div>
+
+    <!-- タイプ結果 -->
+    <div class="card" style="border:3px solid ${dom.color}40;text-align:center">
+      <div style="font-size:14px;font-weight:900;color:${dom.color};margin-bottom:8px">きみの のうタイプは…</div>
+      <span class="type-emoji">${dom.emoji}</span>
+      <div class="type-name" style="color:${dom.color}">${dom.name}</div>
+      <div class="type-desc">${dom.desc}</div>
+    </div>
+
+    <!-- スコア一覧 -->
+    <div class="card">
+      <div style="font-size:16px;font-weight:900;margin-bottom:12px;color:var(--text)">4つの のうタイプ バランス</div>
+      <div class="score-grid">${scoreCells}</div>
+    </div>
+
+    <!-- フッター -->
+    <div style="text-align:center;padding:10px 0 6px;font-size:11px;color:#C09070">
+      開発者　フロンティア75　／　<a href="https://frontier75.com/" style="color:var(--orange);text-decoration:none">https://frontier75.com/</a>
+    </div>
+  </div>
+
+  <div id="kids-email-st" class="email-st">📨 けっかを おくっています…</div>
+
+  <button class="btn pdf-btn" onclick="downloadPDF()" style="margin-top:4px">📄 PDFをほぞんする</button>
+  <button class="btn retry-btn" onclick="restart()">🔄 もういちど やる</button>
+  <div class="footer">開発者　フロンティア75</div>`;}
+
+// ══════════════════════════════════════════
+// アクション
+// ══════════════════════════════════════════
+function goForm(){S.phase='form';render();}
+
+function submitForm(){
+  const name=document.getElementById('f-name').value.trim();
+  const grade=document.getElementById('f-grade').value.trim();
+  const err=document.getElementById('f-err');
+  if(!name){err.textContent='なまえを いれてね！';err.style.display='block';return;}
+  S.form={name,grade};
+  S.phase='quiz'; S.qi=0; render();
+}
+
+function pickAns(v){
+  S.answers[S.qi]=v;
+  document.querySelectorAll('.ans-btn').forEach((b,i)=>{
+    b.classList.remove('selected');
+    if(i===(2-v)) b.classList.add('selected'); // 0=no(index2), 1=maybe(index1), 2=yes(index0)
+  });
+  // ボタンインデックスと値の対応: はい=2(idx0), どちらかな=1(idx1), ちがう=0(idx2)
+  document.querySelectorAll('.ans-btn').forEach((b,i)=>{
+    b.classList.remove('selected');
+  });
+  const vals=[2,1,0]; // ボタン順: はい,どちらかな,ちがう
+  document.querySelectorAll('.ans-btn').forEach((b,i)=>{
+    if(vals[i]===v) b.classList.add('selected');
+  });
+  const nb=document.querySelector('.btn-next');
+  if(nb) nb.disabled=false;
+}
+
+function nextQ(){if(S.answers[S.qi]===null)return;S.qi++;render();}
+function goBack(){
+  if(S.qi>0){S.qi--;render();}
+  else{S.phase='form';render();}
+}
+function toResult(){if(S.answers[S.qi]===null)return;S.phase='result';render();}
+function restart(){
+  S={phase:'welcome',qi:0,answers:new Array(20).fill(null),form:{name:'',grade:''}};
+  render();
+}
+
+// ══════════════════════════════════════════
+// メール送信
+// ══════════════════════════════════════════
+async function sendEmail(){
+  const el=document.getElementById('kids-email-st');
+  if(!el)return;
+  try{
+    const sc=calcKids();
+    const dom=TYPES[sc.dominant];
+    const ansLabels=['ちがうかな','どちらかな','はい！そうだよ！'];
+    const formattedAnswers=KQ.map((q,i)=>({
+      id:q.id, emoji:q.emoji, txt:q.txt,
+      type:TYPES[q.type].name,
+      ans:S.answers[i],
+      ansLabel:S.answers[i]!==null?ansLabels[S.answers[i]]:'みかいとう',
+    }));
+    const res=await fetch('/.netlify/functions/send-email-kids',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        form:S.form,
+        result:{typeName:dom.name,typeEmoji:dom.emoji,desc:dom.desc},
+        scores:{l3p:sc.l3p,l2p:sc.l2p,r3p:sc.r3p,r2p:sc.r2p},
+        answers:formattedAnswers,
+      }),
+    });
+    const json=await res.json();
+    if(json.success){
+      el.style.background='#F0FFF5';el.style.borderColor='#52C97A';
+      el.innerHTML='<span style="color:#52C97A;font-size:16px">✓ せんせいに おくったよ！</span>';
+    }else throw new Error();
+  }catch{
+    el.style.background='#FFF0F5';el.style.borderColor='#FFB6D3';
+    el.innerHTML='<span style="color:#FF6BAF">PDFを ほぞんしてね！</span>';
+  }
+}
+
+// ══════════════════════════════════════════
+// PDF
+// ══════════════════════════════════════════
+async function downloadPDF(){
+  const el=document.getElementById('result-content');
+  try{
+    const canvas=await html2canvas(el,{scale:1.5,useCORS:true,backgroundColor:'#FFF9F0'});
+    const {jsPDF}=window.jspdf;
+    const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
+    const pw=pdf.internal.pageSize.getWidth();
+    const ph=pdf.internal.pageSize.getHeight();
+    const iw=pw, ih=(canvas.height*iw)/canvas.width;
+    const imgData=canvas.toDataURL('image/jpeg',0.85);
+    if(ih<=ph){pdf.addImage(imgData,'JPEG',0,0,iw,ih);}
+    else{
+      let left=ih,pos=0;
+      pdf.addImage(imgData,'JPEG',0,pos,iw,ih);left-=ph;
+      while(left>0){pos=left-ih;pdf.addPage();pdf.addImage(imgData,'JPEG',0,pos,iw,ih);left-=ph;}
+    }
+    pdf.save(`のうタイプしんだん_${S.form.name}.pdf`);
+  }catch{alert('PDFのほぞんに しっぱいしました。');}
+}
+
+render();
+</script>
+</body>
+</html>
