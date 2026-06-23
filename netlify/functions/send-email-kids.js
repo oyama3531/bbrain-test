@@ -78,8 +78,9 @@ function buildHTML(form, result, scores, answers, date) {
   <!-- 子どもの情報 -->
   <div style="padding:22px 28px;border-bottom:1px solid #EDD5BC;background:#FFF9F0">
     <div style="font-size:13px;color:#8A6B5A;font-weight:600;margin-bottom:10px;letter-spacing:.08em">受診者情報</div>
-    <div style="font-size:22px;font-weight:900;color:#3A2010">${form.name} さん</div>
+    <div style="font-size:22px;font-weight:900;color:#3A2010">${form.name} さん　${form.gender||''}</div>
     ${form.grade ? `<div style="font-size:15px;color:#8A6B5A;font-weight:700;margin-top:4px">${form.grade}</div>` : ''}
+    ${form.town ? `<div style="font-size:14px;color:#8A6B5A;font-weight:700;margin-top:2px">📍 ${form.town}</div>` : ''}
   </div>
 
   <!-- 診断結果 -->
