@@ -78,22 +78,22 @@ function buildHTML(form, result, scores, answers, date) {
   <!-- 子どもの情報 -->
   <div style="padding:22px 28px;border-bottom:1px solid #EDD5BC;background:#FFF9F0">
     <div style="font-size:13px;color:#8A6B5A;font-weight:600;margin-bottom:12px;letter-spacing:.08em">受診者情報</div>
-    <table style="width:100%;border-collapse:collapse">
-      <tr>
-        <td style="padding:6px 0;color:#8A6B5A;font-size:13px;width:90px;vertical-align:top">なまえ</td>
-        <td style="padding:6px 0;color:#3A2010;font-size:18px;font-weight:900">${form.name} さん</td>
+    <table style="width:100%;border-collapse:collapse;background:#FFFAF5;border-radius:10px;overflow:hidden">
+      <tr style="border-bottom:1px solid #EDD5BC">
+        <td style="padding:8px 12px;color:#8A6B5A;font-size:13px;width:120px;font-weight:600">なまえ</td>
+        <td style="padding:8px 12px;color:#3A2010;font-size:18px;font-weight:900">${form.name || '?'} さん</td>
+      </tr>
+      <tr style="border-bottom:1px solid #EDD5BC">
+        <td style="padding:8px 12px;color:#8A6B5A;font-size:13px;font-weight:600">きみは？</td>
+        <td style="padding:8px 12px;color:#3A2010;font-size:15px;font-weight:700">${form.gender && form.gender.length > 0 ? form.gender : '（こたえなし）'}</td>
+      </tr>
+      <tr style="border-bottom:1px solid #EDD5BC">
+        <td style="padding:8px 12px;color:#8A6B5A;font-size:13px;font-weight:600">なんねんせい</td>
+        <td style="padding:8px 12px;color:#3A2010;font-size:15px;font-weight:700">${form.grade && form.grade.length > 0 ? form.grade : '（こたえなし）'}</td>
       </tr>
       <tr>
-        <td style="padding:6px 0;color:#8A6B5A;font-size:13px;vertical-align:top">きみは？</td>
-        <td style="padding:6px 0;color:#3A2010;font-size:15px;font-weight:700">${form.gender||'（こたえなし）'}</td>
-      </tr>
-      <tr>
-        <td style="padding:6px 0;color:#8A6B5A;font-size:13px;vertical-align:top">なんねんせい</td>
-        <td style="padding:6px 0;color:#3A2010;font-size:15px;font-weight:700">${form.grade||'（こたえなし）'}</td>
-      </tr>
-      <tr>
-        <td style="padding:6px 0;color:#8A6B5A;font-size:13px;vertical-align:top">すんでいるまち</td>
-        <td style="padding:6px 0;color:#3A2010;font-size:15px;font-weight:700">${form.town||'（こたえなし）'}</td>
+        <td style="padding:8px 12px;color:#8A6B5A;font-size:13px;font-weight:600">すんでいるまち</td>
+        <td style="padding:8px 12px;color:#3A2010;font-size:15px;font-weight:700">${form.town && form.town.length > 0 ? form.town : '（こたえなし）'}</td>
       </tr>
     </table>
   </div>
