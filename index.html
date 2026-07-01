@@ -237,7 +237,7 @@ const Q2=[
 // STATE
 // ══════════════════════════════════════════
 let S={
-  phase:'checking', g:0, si:0, token:'', tokenValid:false,
+  phase:'welcome', g:0, si:0,
   a1:new Array(40).fill(null),
   a2:new Array(10).fill(null),
   form:{name:'',email:'',phone:'',org:''},
@@ -331,9 +331,7 @@ function progBar(done){
 function render(){
   const app=document.getElementById('app');
   let h='';
-  if(S.phase==='checking')h=rChecking();
-  else if(S.phase==='invalid')h=rInvalid();
-  else if(S.phase==='welcome')h=rWelcome();
+  if(S.phase==='welcome')h=rWelcome();
   else if(S.phase==='form')h=rForm();
   else if(S.phase==='s1')h=rS1();
   else if(S.phase==='s2')h=rS2();
@@ -617,34 +615,6 @@ async function downloadPDF(){
 // ══════════════════════════════════════════
 // ACTIONS
 // ══════════════════════════════════════════
-
-// ── トークン確認中 ──
-function rChecking(){return`
-  <div style="text-align:center;padding:80px 20px">
-    <div style="font-size:48px;margin-bottom:16px">🔐</div>
-    <div style="font-size:18px;font-weight:700;color:var(--text-m)">アクセスを確認しています...</div>
-  </div>`;}
-
-// ── トークン無効 ──
-function rInvalid(){
-  const msg = S.invalidReason==='used'
-    ? '⚠️ このURLはすでに使用済みです。'
-    : '⚠️ このURLは無効です。';
-  return`
-  <div style="text-align:center;padding:60px 20px">
-    <div style="font-size:52px;margin-bottom:16px">🚫</div>
-    <div class="card" style="max-width:400px;margin:0 auto;text-align:center">
-      <div style="font-size:17px;font-weight:700;color:var(--rose);margin-bottom:12px">${msg}</div>
-      <div style="font-size:14px;line-height:1.8;color:var(--text-m)">
-        担当者（フロンティア75）にご連絡いただき、<br>新しいURLを発行してもらってください。
-      </div>
-      <div style="margin-top:18px;padding-top:16px;border-top:1px solid var(--border)">
-        <div style="font-size:12px;color:var(--text-l)">開発者　フロンティア75</div>
-        <a href="https://frontier75.com/" style="font-size:12px;color:var(--primary);text-decoration:none">https://frontier75.com/</a>
-      </div>
-    </div>
-  </div>`;}
-
 function goForm(){S.phase='form';render();}
 
 function submitForm(){
@@ -680,18 +650,7 @@ function pickS2(j){
 }
 function nextS2(){if(S.a2[S.si]===null)return;S.si++;render();}
 function backS2(){if(S.si>0){S.si--;render();}else{S.phase='s1';S.g=7;render();}}
-function toResult(){
-  if(S.a2[S.si]===null)return;
-  // トークンを使用済みにする
-  if(S.token){
-    fetch('/.netlify/functions/token-verify',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({token:S.token, action:'use'}),
-    }).catch(()=>{});
-  }
-  S.phase='result';render();
-}
+function toResult(){if(S.a2[S.si]===null)return;S.phase='result';render();}
 function restart(){
   S={phase:'welcome',g:0,si:0,a1:new Array(40).fill(null),a2:new Array(10).fill(null),form:{name:'',email:'',phone:'',org:''}};
   render();
