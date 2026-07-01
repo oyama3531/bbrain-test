@@ -1,37 +1,50 @@
-import { getStore } from '@netlify/blobs';
-
 export const handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Content-Type': 'application/json',
   };
-
   if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
 
-  const { token, action } = JSON.parse(event.body || '{}');
+  let body = {};
+  try { body = JSON.parse(event.body || '{}'); } catch(e) {}
 
-  if (!token) return { statusCode: 400, headers, body: JSON.stringify({ error: 'トークンがありません' }) };
+  const { token, action } = body;
+
+  if (!token) {
+    return { statusCode: 200, headers, body: JSON.stringify({ valid: false, reason: 'notfound' }) };
+  }
 
   try {
-    const store = getStore('bbrain-tokens');
-    const data = await store.get(token, { type: 'json' });
+    // データ取得
+    const getRes = await fetch(`https://api.jsonbin.io/v3/b/${process.env.JSONBIN_BIN_ID}`, {
+      headers: { 'X-Master-Key': process.env.JSONBIN_API_KEY },
+    });
+    const getData = await getRes.json();
+    const current = getData.record || { tokens: {} };
+    const data = current.tokens[token];
 
     // トークンが存在しない
     if (!data) {
       return { statusCode: 200, headers, body: JSON.stringify({ valid: false, reason: 'notfound' }) };
     }
-
     // 使用済み
     if (data.used) {
       return { statusCode: 200, headers, body: JSON.stringify({ valid: false, reason: 'used', usedAt: data.usedAt }) };
     }
 
-    // action=use のとき → 使用済みにする
+    // 使用済みにする
     if (action === 'use') {
-      data.used = true;
-      data.usedAt = new Date().toISOString();
-      await store.setJSON(token, data);
+      current.tokens[token].used = true;
+      current.tokens[token].usedAt = new Date().toISOString();
+      await fetch(`https://api.jsonbin.io/v3/b/${process.env.JSONBIN_BIN_ID}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Master-Key': process.env.JSONBIN_API_KEY,
+        },
+        body: JSON.stringify(current),
+      });
     }
 
     return {
@@ -41,7 +54,7 @@ export const handler = async (event) => {
     };
 
   } catch (err) {
-    console.error(err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    console.error('Error:', err.message);
+    return { statusCode: 200, headers, body: JSON.stringify({ valid: false, reason: 'error' }) };
   }
 };
