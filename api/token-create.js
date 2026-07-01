@@ -1,62 +1,38 @@
-export const handler = async (event) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Password',
-    'Content-Type': 'application/json',
-  };
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
-  if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method Not Allowed' }) };
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Password');
+  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
+  if (req.method !== 'POST') { res.status(405).json({ error: 'Method Not Allowed' }); return; }
 
-  const adminPass = event.headers['x-admin-password'];
+  const adminPass = req.headers['x-admin-password'];
   if (adminPass !== process.env.ADMIN_PASSWORD) {
-    return { statusCode: 401, headers, body: JSON.stringify({ error: 'パスワードが違います' }) };
+    res.status(401).json({ error: 'パスワードが違います' }); return;
   }
 
   try {
-    const { clientName, companyName } = JSON.parse(event.body || '{}');
+    const { clientName, companyName } = req.body || {};
+    const token = Math.random().toString(36).substring(2,6).toUpperCase() +
+                  Math.random().toString(36).substring(2,6).toUpperCase();
 
-    // トークン生成（8文字）
-    const token = Math.random().toString(36).substring(2, 6).toUpperCase() +
-                  Math.random().toString(36).substring(2, 6).toUpperCase();
-
-    // 現在のデータを取得
     const getRes = await fetch(`https://api.jsonbin.io/v3/b/${process.env.JSONBIN_BIN_ID}`, {
       headers: { 'X-Master-Key': process.env.JSONBIN_API_KEY },
     });
     const getData = await getRes.json();
     const current = getData.record || { tokens: {} };
 
-    // 新しいトークンを追加
     current.tokens[token] = {
-      token,
-      clientName: clientName || '',
-      companyName: companyName || '',
-      createdAt: new Date().toISOString(),
-      used: false,
-      usedAt: null,
+      token, clientName: clientName||'', companyName: companyName||'',
+      createdAt: new Date().toISOString(), used: false, usedAt: null,
     };
 
-    // 保存
     await fetch(`https://api.jsonbin.io/v3/b/${process.env.JSONBIN_BIN_ID}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': process.env.JSONBIN_API_KEY,
-      },
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': process.env.JSONBIN_API_KEY },
       body: JSON.stringify(current),
     });
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({
-        success: true,
-        token,
-        url: `https://brain3433.netlify.app/?token=${token}`,
-      }),
-    };
+    res.json({ success: true, token, url: `https://bbrain-test.vercel.app/?token=${token}` });
   } catch (err) {
-    console.error(err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    res.status(500).json({ error: err.message });
   }
-};
+}

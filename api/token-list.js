@@ -1,14 +1,11 @@
-export const handler = async (event) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, X-Admin-Password',
-    'Content-Type': 'application/json',
-  };
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 200, headers, body: '' };
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Admin-Password');
+  if (req.method === 'OPTIONS') { res.status(200).end(); return; }
 
-  const adminPass = event.headers['x-admin-password'];
+  const adminPass = req.headers['x-admin-password'];
   if (adminPass !== process.env.ADMIN_PASSWORD) {
-    return { statusCode: 401, headers, body: JSON.stringify({ error: 'パスワードが違います' }) };
+    res.status(401).json({ error: 'パスワードが違います' }); return;
   }
 
   try {
@@ -17,18 +14,10 @@ export const handler = async (event) => {
     });
     const getData = await getRes.json();
     const current = getData.record || { tokens: {} };
-
-    // オブジェクトを配列に変換して新しい順に並べる
     const tokens = Object.values(current.tokens)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ success: true, tokens }),
-    };
+      .sort((a,b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json({ success: true, tokens });
   } catch (err) {
-    console.error(err);
-    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
+    res.status(500).json({ error: err.message });
   }
-};
+}
