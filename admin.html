@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>B-Brain 管理画面</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --primary:#C96B45;--primary-lt:#E8956A;--sage:#7BAE8E;--rose:#E07878;
+  --bg:#FDF6EC;--card:#FFFFFF;--text:#3A2518;--text-m:#7A5A48;--text-l:#B09080;
+  --border:#EDD5BC;--shadow:0 4px 20px rgba(160,90,50,.10);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);min-height:100vh;color:var(--text)}
+#app{max-width:800px;margin:0 auto;padding:20px 16px 40px}
+
+/* ログイン */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:80vh}
+.login-card{background:var(--card);border-radius:20px;padding:36px 32px;box-shadow:var(--shadow);border:1px solid var(--border);width:100%;max-width:400px;text-align:center}
+.login-logo{font-size:40px;margin-bottom:12px}
+.login-title{font-size:22px;font-weight:700;color:var(--primary);margin-bottom:6px}
+.login-sub{font-size:13px;color:var(--text-l);margin-bottom:24px}
+.inp{width:100%;padding:13px 16px;border:2px solid var(--border);border-radius:12px;font-family:inherit;font-size:15px;color:var(--text);background:white;outline:none;transition:border-color .2s;margin-bottom:12px}
+.inp:focus{border-color:var(--primary-lt)}
+.btn{display:block;width:100%;padding:14px;border:none;border-radius:99px;font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-p{background:linear-gradient(135deg,var(--primary),var(--primary-lt));color:#fff;box-shadow:0 4px 16px rgba(201,107,69,.3)}
+.btn-p:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(201,107,69,.38)}
+.btn-g{background:transparent;color:var(--text-m);border:1.5px solid var(--border);padding:10px}
+.btn-g:hover{border-color:var(--primary);color:var(--primary)}
+.err-msg{color:var(--rose);font-size:13px;font-weight:700;padding:8px 12px;background:#FFF3F3;border-radius:10px;margin-bottom:12px;display:none}
+
+/* ヘッダー */
+.header{background:linear-gradient(135deg,var(--primary),var(--primary-lt));border-radius:16px;padding:18px 24px;color:white;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between}
+.header-title{font-size:18px;font-weight:700}
+.header-sub{font-size:12px;opacity:.85;margin-top:2px}
+.logout-btn{background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:white;padding:7px 16px;border-radius:99px;font-family:inherit;font-size:13px;cursor:pointer;transition:all .2s}
+.logout-btn:hover{background:rgba(255,255,255,.35)}
+
+/* カード */
+.card{background:var(--card);border-radius:16px;padding:22px 20px;box-shadow:var(--shadow);border:1px solid var(--border);margin-bottom:16px}
+.card-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+
+/* トークン発行フォーム */
+.form-row{display:flex;gap:10px;margin-bottom:12px}
+.form-row .inp{margin-bottom:0}
+.form-row .btn{flex-shrink:0;width:auto;padding:13px 24px;white-space:nowrap}
+
+/* トークン一覧 */
+.token-table{width:100%;border-collapse:collapse}
+.token-table th{padding:10px 12px;text-align:left;font-size:12px;color:var(--text-l);font-weight:600;border-bottom:2px solid var(--border);background:#FFF9F4}
+.token-table td{padding:12px;font-size:13px;border-bottom:1px solid #F5EDE4;vertical-align:top}
+.token-table tr:last-child td{border-bottom:none}
+.token-badge{display:inline-block;font-family:monospace;font-size:14px;font-weight:700;padding:4px 10px;border-radius:8px;letter-spacing:.1em}
+.badge-unused{background:#F0FAF3;color:#52C97A;border:1px solid #C0DFC0}
+.badge-used{background:#F5F5F5;color:#A0A0A0;border:1px solid #DDD;text-decoration:line-through}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.dot-ok{background:#52C97A}
+.dot-used{background:#C0C0C0}
+.copy-btn{background:#FFF5E0;border:1px solid var(--border);color:var(--primary);padding:4px 10px;border-radius:8px;font-family:inherit;font-size:12px;cursor:pointer;transition:all .2s;margin-left:6px}
+.copy-btn:hover{background:var(--primary);color:white}
+.url-text{font-size:11px;color:var(--text-l);margin-top:3px;word-break:break-all}
+.empty-msg{text-align:center;padding:30px;color:var(--text-l);font-size:14px}
+.loading{text-align:center;padding:20px;color:var(--text-l)}
+
+/* 統計 */
+.stats-row{display:flex;gap:10px;margin-bottom:16px}
+.stat-box{flex:1;background:var(--bg);border-radius:12px;padding:14px;border:1px solid var(--border);text-align:center}
+.stat-num{font-size:26px;font-weight:700;color:var(--primary)}
+.stat-lbl{font-size:11px;color:var(--text-l);margin-top:3px}
+
+/* コピー成功 */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#3A2518;color:white;padding:10px 20px;border-radius:99px;font-size:13px;font-weight:600;opacity:0;transition:opacity .3s;pointer-events:none;z-index:999}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div class="toast" id="toast">コピーしました！</div>
+
+<script>
+let adminPass = '';
+let tokens = [];
+
+// ══════════════════════════════════════════
+// 描画
+// ══════════════════════════════════════════
+function render(phase) {
+  const app = document.getElementById('app');
+  if (phase === 'login') {
+    app.innerHTML = `
+      <div class="login-wrap">
+        <div class="login-card">
+          <div class="login-logo">🔐</div>
+          <div class="login-title">B-Brain 管理画面</div>
+          <div class="login-sub">フロンティア75 専用</div>
+          <div class="err-msg" id="login-err">パスワードが違います</div>
+          <input class="inp" id="pass-inp" type="password" placeholder="管理者パスワード"
+            onkeydown="if(event.key==='Enter')doLogin()">
+          <button class="btn btn-p" onclick="doLogin()">ログイン</button>
+        </div>
+      </div>`;
+    setTimeout(() => document.getElementById('pass-inp')?.focus(), 100);
+  } else {
+    app.innerHTML = `
+      <div class="header">
+        <div>
+          <div class="header-title">🧠 B-Brain 管理画面</div>
+          <div class="header-sub">フロンティア75 専用 ／ URLトークン管理</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()">ログアウト</button>
+      </div>
+
+      <!-- 統計 -->
+      <div class="stats-row" id="stats-row">
+        <div class="stat-box"><div class="stat-num" id="stat-total">-</div><div class="stat-lbl">発行数</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-unused" style="color:var(--sage)">-</div><div class="stat-lbl">未使用</div></div>
+        <div class="stat-box"><div class="stat-num" id="stat-used" style="color:var(--text-l)">-</div><div class="stat-lbl">使用済み</div></div>
+      </div>
+
+      <!-- トークン発行 -->
+      <div class="card">
+        <div class="card-title">✉️ 新しいURLを発行する</div>
+        <div class="form-row">
+          <input class="inp" id="client-name" type="text" placeholder="クライアント名（例：山田太郎）">
+          <input class="inp" id="company-name" type="text" placeholder="会社名（例：〇〇株式会社）">
+        </div>
+        <button class="btn btn-p" onclick="createToken()">URLを発行する　→</button>
+
+        <!-- 発行結果 -->
+        <div id="create-result" style="display:none;margin-top:16px;padding:16px;background:#F0FAF3;border-radius:12px;border:1px solid #C0DFC0">
+          <div style="font-size:13px;color:var(--sage);font-weight:700;margin-bottom:8px">✓ 発行されました！</div>
+          <div style="font-size:13px;color:var(--text-m);margin-bottom:6px">以下のURLをクライアントに送ってください：</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div id="result-url" style="font-size:13px;color:var(--primary);font-weight:700;word-break:break-all;flex:1"></div>
+            <button class="copy-btn" onclick="copyURL()">コピー</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- トークン一覧 -->
+      <div class="card">
+        <div class="card-title" style="justify-content:space-between">
+          <span>📋 発行済みURL一覧</span>
+          <button class="btn-g btn" style="width:auto;padding:7px 16px;font-size:13px" onclick="loadTokens()">🔄 更新</button>
+        </div>
+        <div id="token-list"><div class="loading">読み込み中...</div></div>
+      </div>`;
+
+    loadTokens();
+  }
+}
+
+// ══════════════════════════════════════════
+// ログイン
+// ══════════════════════════════════════════
+async function doLogin() {
+  const pass = document.getElementById('pass-inp').value;
+  if (!pass) return;
+
+  // パスワードをテスト（token-listを呼んで確認）
+  const res = await fetch('/.netlify/functions/token-list', {
+    headers: { 'X-Admin-Password': pass, 'Content-Type': 'application/json' },
+  });
+
+  if (res.status === 401) {
+    document.getElementById('login-err').style.display = 'block';
+    return;
+  }
+
+  adminPass = pass;
+  const data = await res.json();
+  tokens = data.tokens || [];
+  render('admin');
+}
+
+function doLogout() {
+  adminPass = '';
+  tokens = [];
+  render('login');
+}
+
+// ══════════════════════════════════════════
+// トークン発行
+// ══════════════════════════════════════════
+async function createToken() {
+  const clientName = document.getElementById('client-name').value.trim();
+  const companyName = document.getElementById('company-name').value.trim();
+
+  const res = await fetch('/.netlify/functions/token-create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Admin-Password': adminPass },
+    body: JSON.stringify({ clientName, companyName }),
+  });
+
+  const data = await res.json();
+  if (data.success) {
+    const resultDiv = document.getElementById('create-result');
+    document.getElementById('result-url').textContent = data.url;
+    resultDiv.style.display = 'block';
+    resultDiv.dataset.url = data.url;
+    document.getElementById('client-name').value = '';
+    document.getElementById('company-name').value = '';
+    loadTokens();
+  }
+}
+
+let lastURL = '';
+function copyURL() {
+  const url = document.getElementById('result-url').textContent;
+  navigator.clipboard.writeText(url).then(() => showToast('コピーしました！'));
+}
+
+function copyTokenURL(url) {
+  navigator.clipboard.writeText(url).then(() => showToast('コピーしました！'));
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+// ══════════════════════════════════════════
+// トークン一覧
+// ══════════════════════════════════════════
+async function loadTokens() {
+  const listEl = document.getElementById('token-list');
+  if (!listEl) return;
+  listEl.innerHTML = '<div class="loading">読み込み中...</div>';
+
+  const res = await fetch('/.netlify/functions/token-list', {
+    headers: { 'X-Admin-Password': adminPass, 'Content-Type': 'application/json' },
+  });
+  const data = await res.json();
+  tokens = data.tokens || [];
+
+  // 統計更新
+  const unused = tokens.filter(t => !t.used).length;
+  const used = tokens.filter(t => t.used).length;
+  const statTotal = document.getElementById('stat-total');
+  const statUnused = document.getElementById('stat-unused');
+  const statUsed = document.getElementById('stat-used');
+  if (statTotal) statTotal.textContent = tokens.length;
+  if (statUnused) statUnused.textContent = unused;
+  if (statUsed) statUsed.textContent = used;
+
+  if (tokens.length === 0) {
+    listEl.innerHTML = '<div class="empty-msg">まだURLは発行されていません</div>';
+    return;
+  }
+
+  const rows = tokens.map(t => {
+    const url = `https://brain3433.netlify.app/?token=${t.token}`;
+    const createdDate = new Date(t.createdAt).toLocaleString('ja-JP', {
+      month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    });
+    const usedDate = t.usedAt ? new Date(t.usedAt).toLocaleString('ja-JP', {
+      month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
+    }) : '';
+
+    return `<tr>
+      <td>
+        <div style="font-weight:700;color:var(--text)">${t.clientName || '（名前なし）'}</div>
+        <div style="font-size:11px;color:var(--text-l);margin-top:2px">${t.companyName || ''}</div>
+      </td>
+      <td>
+        <span class="token-badge ${t.used ? 'badge-used' : 'badge-unused'}">${t.token}</span>
+        <div class="url-text">${url}
+          <button class="copy-btn" onclick="copyTokenURL('${url}')">コピー</button>
+        </div>
+      </td>
+      <td>
+        <span class="status-dot ${t.used ? 'dot-used' : 'dot-ok'}"></span>
+        ${t.used
+          ? `<span style="color:var(--text-l)">使用済み<br><span style="font-size:11px">${usedDate}</span></span>`
+          : `<span style="color:var(--sage);font-weight:700">未使用</span>`}
+      </td>
+      <td style="color:var(--text-l);font-size:12px">${createdDate}</td>
+    </tr>`;
+  }).join('');
+
+  listEl.innerHTML = `
+    <table class="token-table">
+      <thead>
+        <tr>
+          <th>クライアント</th>
+          <th>トークン / URL</th>
+          <th>ステータス</th>
+          <th>発行日時</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+// ══════════════════════════════════════════
+// 初期表示
+// ══════════════════════════════════════════
+render('login');
+</script>
+</body>
+</html>
