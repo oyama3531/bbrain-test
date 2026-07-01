@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "B-Brain 脳タイプ診断テスト",
   "dependencies": {
-    "nodemailer": "^6.9.7"
+    "nodemailer": "^6.9.7",
+    "@netlify/blobs": "^8.1.0"
   }
 }
