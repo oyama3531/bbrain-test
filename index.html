@@ -478,7 +478,7 @@ function rResult(){
       <div style="font-size:13px;font-weight:700;color:${col};min-width:26px;text-align:right">${val}</div>
     </div></div>`;
   return`
-  <div id="result-content" style="background:var(--bg);padding:2px"><div id="pdf-page1">
+  <div id="result-content" style="background:var(--bg);padding:2px">
     <!-- 名前・ヘッダー -->
     <div style="text-align:center;padding:9px 0 7px;background:linear-gradient(135deg,var(--primary),var(--primary-lt));border-radius:11px;margin-bottom:6px;color:white">
       <div style="font-size:11px;opacity:.9;margin-bottom:2px">B-Brain 脳タイプ診断結果</div>
@@ -539,7 +539,6 @@ function rResult(){
         <a href="https://frontier75.com/" style="font-size:10px;color:var(--primary);text-decoration:none;display:block;margin-top:1px">https://frontier75.com/</a>
       </div>
 
-</div><div id="pdf-page2">
     <!-- 4つの基本脳タイプ説明 -->
     <div style="background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);margin-top:8px">
       <div style="font-family:'Noto Serif JP',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border)">★ 4つの基本脳タイプ</div>
@@ -670,7 +669,7 @@ function rResult(){
         </div>
       </div>
     </div>
-    </div></div>
+    </div>
   </div>
 
   <div id="email-status" class="email-status" style="margin-top:10px">📨 結果を送信中...</div>
@@ -720,24 +719,93 @@ async function sendEmail(){
   }
 }
 
+// 見出しの文字列から、それを内包するカード要素(直近の親div)を探す
+// (見出し自身は子要素を持たないテキストのみのdivという前提で判定)
+function _findCardByHeading(root,txt){
+  const divs=root.querySelectorAll('div');
+  for(const d of divs){
+    if(d.children.length===0 && d.textContent.includes(txt))return d.parentElement;
+  }
+  return null;
+}
+
 async function downloadPDF(){
   const btn=document.getElementById('pdf-btn');
   btn.disabled=true; btn.textContent='生成中...';
+  let stage=null;
   try{
+    const src=document.getElementById('result-content');
+
+    // ── ページ1用：結果のみ（解説カードを取り除いた複製）──
+    const page1=src.cloneNode(true);
+    const p1card1=_findCardByHeading(page1,'4つの基本脳タイプ');
+    const p1card2=_findCardByHeading(page1,'脳活用度・ストレス耐性について');
+    if(p1card1)p1card1.remove();
+    if(p1card2)p1card2.remove();
+
+    // ── ページ2用：解説のみ（元要素から複製して1つにまとめる）──
+    const srcCard1=_findCardByHeading(src,'4つの基本脳タイプ');
+    const srcCard2=_findCardByHeading(src,'脳活用度・ストレス耐性について');
+    const page2=document.createElement('div');
+    page2.style.background='var(--bg)';
+    page2.style.padding='2px';
+    if(srcCard1)page2.appendChild(srcCard1.cloneNode(true));
+    if(srcCard2){
+      const c2=srcCard2.cloneNode(true);
+      c2.style.marginTop='8px';
+      page2.appendChild(c2);
+    }
+
+    // 画面外に一時的に配置してキャプチャ（CSS変数を正しく解決するため同一ドキュメント内に置く）
+    stage=document.createElement('div');
+    stage.style.position='fixed';
+    stage.style.left='-9999px';
+    stage.style.top='0';
+    stage.style.width=src.offsetWidth+'px';
+    document.body.appendChild(stage);
+
+    stage.appendChild(page1);
+    const canvas1=await html2canvas(page1,{scale:1.5,useCORS:true,backgroundColor:'#FDF6EC'});
+    stage.removeChild(page1);
+
+    stage.appendChild(page2);
+    const canvas2=await html2canvas(page2,{scale:1.5,useCORS:true,backgroundColor:'#FDF6EC'});
+    stage.removeChild(page2);
+
+    document.body.removeChild(stage); stage=null;
+
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    for(const id of ['pdf-page1','pdf-page2']){
-      const el=document.getElementById(id);
-      const canvas=await html2canvas(el,{scale:1.5,useCORS:true,backgroundColor:'#FDF6EC'});
-      const pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight();
-      const iw=pw,ih=(canvas.height*iw)/canvas.width;
-      const img=canvas.toDataURL('image/jpeg',0.82);
-      pdf.addImage(img,'JPEG',0,0,iw,Math.min(ih,ph));
-      if(id==='pdf-page1') pdf.addPage();
-    }
+    const pw=pdf.internal.pageSize.getWidth();
+    const ph=pdf.internal.pageSize.getHeight();
+
+    // canvasをPDFページへ配置。fitOnePage=trueの場合は1ページに収まるよう縮小し、余白を許容する
+    const addCanvas=(canvas,fitOnePage)=>{
+      const iw=pw, ih=(canvas.height*iw)/canvas.width;
+      const imgData=canvas.toDataURL('image/jpeg',0.82);
+      if(fitOnePage&&ih>ph){
+        const s=ph/ih, dw=iw*s, dh=ph, dx=(pw-dw)/2;
+        pdf.addImage(imgData,'JPEG',dx,0,dw,dh);
+      }else if(ih<=ph){
+        pdf.addImage(imgData,'JPEG',0,0,iw,ih);
+      }else{
+        let left=ih,pos=0;
+        pdf.addImage(imgData,'JPEG',0,pos,iw,ih);
+        left-=ph;
+        while(left>0){pos=left-ih;pdf.addPage();pdf.addImage(imgData,'JPEG',0,pos,iw,ih);left-=ph;}
+      }
+    };
+
+    addCanvas(canvas1,false);   // 1ページ目：結果のみ（従来通り、必要なら複数ページに分割）
+    pdf.addPage();
+    addCanvas(canvas2,true);    // 2ページ目：解説を1ページに収める（余白は許容）
+
     const d=new Date().toLocaleDateString('ja-JP').replace(/\//g,'-');
     pdf.save(`BBrain診断_${S.form.name}_${d}.pdf`);
-  }catch(e){alert('PDF生成に失敗しました。');}
+  }catch(e){
+    if(stage&&stage.parentNode)document.body.removeChild(stage);
+    alert('PDF生成に失敗しました。');
+  }
   btn.disabled=false; btn.textContent='📄 PDFをダウンロード';
 }
 
