@@ -780,7 +780,7 @@ function restart(){
     const controller=new AbortController();
     const timer=setTimeout(()=>{
       controller.abort();
-      S.phase='invalid';S.invalidReason='timeout';render();
+      if(S.phase==='checking'){S.phase='invalid';S.invalidReason='timeout';render();}
     },10000);
     const res=await fetch('/api/token-verify',{
       method:'POST',
@@ -794,6 +794,7 @@ function restart(){
     if(data.valid){S.tokenValid=true;S.phase='welcome';render();}
     else{S.phase='invalid';S.invalidReason=data.reason||'notfound';render();}
   }catch(e){
+    console.error('initApp error:',e.message);
     if(S.phase==='checking'){S.phase='invalid';S.invalidReason='error';render();}
   }
 })();
