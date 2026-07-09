@@ -828,7 +828,29 @@ function restart(){
   render();
 }
 
-render();
+(async function initApp(){
+  const params=new URLSearchParams(window.location.search);
+  const token=params.get('token');
+  if(!token){S.phase='invalid';S.invalidReason='notfound';render();return;}
+  S.token=token;S.phase='checking';render();
+  try{
+    const controller=new AbortController();
+    const timer=setTimeout(()=>{controller.abort();S.phase='invalid';S.invalidReason='timeout';render();},10000);
+    const res=await fetch('/api/token-verify',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token,action:'check'}),
+      signal:controller.signal,
+    });
+    clearTimeout(timer);
+    if(!res.ok){S.phase='invalid';S.invalidReason='error';render();return;}
+    const data=await res.json();
+    if(data.valid){S.tokenValid=true;S.phase='welcome';render();}
+    else{S.phase='invalid';S.invalidReason=data.reason||'notfound';render();}
+  }catch(e){
+    if(S.phase==='checking'){S.phase='invalid';S.invalidReason='error';render();}
+  }
+})();
 </script>
 </body>
 </html>
