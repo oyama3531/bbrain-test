@@ -478,7 +478,7 @@ function rResult(){
       <div style="font-size:13px;font-weight:700;color:${col};min-width:26px;text-align:right">${val}</div>
     </div></div>`;
   return`
-  <div id="result-content" style="background:var(--bg);padding:2px">
+  <div id="result-content" style="background:var(--bg);padding:2px"><div id="pdf-page1">
     <!-- 名前・ヘッダー -->
     <div style="text-align:center;padding:9px 0 7px;background:linear-gradient(135deg,var(--primary),var(--primary-lt));border-radius:11px;margin-bottom:6px;color:white">
       <div style="font-size:11px;opacity:.9;margin-bottom:2px">B-Brain 脳タイプ診断結果</div>
@@ -539,6 +539,7 @@ function rResult(){
         <a href="https://frontier75.com/" style="font-size:10px;color:var(--primary);text-decoration:none;display:block;margin-top:1px">https://frontier75.com/</a>
       </div>
 
+</div><div id="pdf-page2">
     <!-- 4つの基本脳タイプ説明 -->
     <div style="background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);margin-top:8px">
       <div style="font-family:'Noto Serif JP',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border)">★ 4つの基本脳タイプ</div>
@@ -669,7 +670,7 @@ function rResult(){
         </div>
       </div>
     </div>
-    </div>
+    </div></div>
   </div>
 
   <div id="email-status" class="email-status" style="margin-top:10px">📨 結果を送信中...</div>
@@ -723,21 +724,16 @@ async function downloadPDF(){
   const btn=document.getElementById('pdf-btn');
   btn.disabled=true; btn.textContent='生成中...';
   try{
-    const el=document.getElementById('result-content');
-    const canvas=await html2canvas(el,{scale:1.5,useCORS:true,backgroundColor:'#FDF6EC'});
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
-    const pw=pdf.internal.pageSize.getWidth();
-    const ph=pdf.internal.pageSize.getHeight();
-    const iw=pw, ih=(canvas.height*iw)/canvas.width;
-    const imgData=canvas.toDataURL('image/jpeg',0.82);
-    if(ih<=ph){
-      pdf.addImage(imgData,'JPEG',0,0,iw,ih);
-    } else {
-      let left=ih, pos=0;
-      pdf.addImage(imgData,'JPEG',0,pos,iw,ih);
-      left-=ph;
-      while(left>0){pos=left-ih;pdf.addPage();pdf.addImage(imgData,'JPEG',0,pos,iw,ih);left-=ph;}
+    for(const id of ['pdf-page1','pdf-page2']){
+      const el=document.getElementById(id);
+      const canvas=await html2canvas(el,{scale:1.5,useCORS:true,backgroundColor:'#FDF6EC'});
+      const pw=pdf.internal.pageSize.getWidth(),ph=pdf.internal.pageSize.getHeight();
+      const iw=pw,ih=(canvas.height*iw)/canvas.width;
+      const img=canvas.toDataURL('image/jpeg',0.82);
+      pdf.addImage(img,'JPEG',0,0,iw,Math.min(ih,ph));
+      if(id==='pdf-page1') pdf.addPage();
     }
     const d=new Date().toLocaleDateString('ja-JP').replace(/\//g,'-');
     pdf.save(`BBrain診断_${S.form.name}_${d}.pdf`);
