@@ -479,7 +479,6 @@ function rResult(){
     </div></div>`;
   return`
   <div id="result-content" style="background:var(--bg);padding:2px">
-  <div id="result-page1" style="background:var(--bg);padding:2px">
     <!-- 名前・ヘッダー -->
     <div style="text-align:center;padding:9px 0 7px;background:linear-gradient(135deg,var(--primary),var(--primary-lt));border-radius:11px;margin-bottom:6px;color:white">
       <div style="font-size:11px;opacity:.9;margin-bottom:2px">B-Brain 脳タイプ診断結果</div>
@@ -539,16 +538,6 @@ function rResult(){
         <div style="font-size:10px;color:var(--text-l)">開発者　フロンティア75　／　B-Brain 脳タイプ診断</div>
         <a href="https://frontier75.com/" style="font-size:10px;color:var(--primary);text-decoration:none;display:block;margin-top:1px">https://frontier75.com/</a>
       </div>
-
-  </div><!-- end result-page1 -->
-
-  <!-- result-page2: 説明ページ -->
-  <div id="result-page2" style="background:var(--bg);padding:2px;display:none">
-    <!-- ヘッダー（2ページ目用） -->
-    <div style="text-align:center;padding:8px 0 6px;background:linear-gradient(135deg,var(--primary),var(--primary-lt));border-radius:11px;margin-bottom:8px;color:white">
-      <div style="font-size:11px;opacity:.9">B-Brain 脳タイプ診断　解説</div>
-      <div style="font-size:15px;font-weight:700;margin-top:2px">${S.form.name} 様</div>
-    </div>
 
     <!-- 4つの基本脳タイプ説明 -->
     <div style="background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);margin-top:8px">
@@ -681,7 +670,76 @@ function rResult(){
       </div>
     </div>
     </div>
-  </div><!-- end result-page2 -->
+
+    <!-- 4つの基本脳タイプ説明 -->
+    <div style="background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);margin-top:8px">
+      <div style="font-family:'Noto Serif JP',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border)">★ 4つの基本脳タイプ</div>
+      <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #F0E0D0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="background:var(--sky);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px">合理主義派</span>
+          <span style="font-size:14px;font-weight:700;color:var(--sky)">左脳3次元</span>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">知識を統合して考え方を導き出す脳の領域</div>
+        <div style="font-size:12px;color:var(--text-m);line-height:1.7;margin-bottom:6px">論理的な思考と合理性を重視し、本質を追求します。過程よりも結果を大切にします。</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:#EEF4FF;border-radius:8px;padding:8px 10px"><div style="font-size:11px;font-weight:700;color:var(--sky);margin-bottom:4px">幸せを感じるとき</div><div style="font-size:11px;color:var(--text);line-height:1.6">・習得した知識を活かせるとき<br>・専門家として誇りを持てるとき</div></div>
+          <div style="background:#F5F0FF;border-radius:8px;padding:8px 10px"><div style="font-size:11px;font-weight:700;color:#7A60C0;margin-bottom:4px">苦手とする状況</div><div style="font-size:11px;color:var(--text);line-height:1.6">・効率を優先しない時間の使い方<br>・場当たり的な対応・雑談や世間話</div></div>
+        </div>
+      </div>
+      <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #F0E0D0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="background:var(--amber);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px">原理主義派</span>
+          <span style="font-size:14px;font-weight:700;color:var(--amber)">左脳2次元</span>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">言語の中枢として豊富な知識を蓄える脳の領域</div>
+        <div style="font-size:12px;color:var(--text-m);line-height:1.7;margin-bottom:6px">データを詳しく分析し、行動を決定します。細かい作業やルーティンワークが得意です。</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:#FFF9EE;border-radius:8px;padding:8px 10px"><div style="font-size:11px;font-weight:700;color:var(--amber);margin-bottom:4px">幸せを感じるとき</div><div style="font-size:11px;color:var(--text);line-height:1.6">・ルール通り・スケジュール通りに進むとき<br>・数値で目標を達成できたとき</div></div>
+          <div style="background:#F5F0FF;border-radius:8px;padding:8px 10px"><div style="font-size:11px;font-weight:700;color:#7A60C0;margin-bottom:4px">苦手とする状況</div><div style="font-size:11px;color:var(--text);line-height:1.6">・抽象的な話・急な予定変更<br>・自分の価値観への異論や批判</div></div>
+        </div>
+      </div>
+      <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #F0E0D0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="background:var(--sage);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px">拡張主義派</span>
+          <span style="font-size:14px;font-weight:700;color:var(--sage)">右脳3次元</span>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">空間認識や注意力に関係し、行動を促す脳の領域</div>
+        <div style="font-size:12px;color:var(--text-m);line-height:1.7;margin-bottom:6px">人間関係や環境を広げることを重視します。独創性に長け、周囲の人を巻き込む力を持っています。</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:#F0FAF3;border-radius:8px;padding:8px 10px"><div style="font-size:11px;font-weight:700;color:var(--sage);margin-bottom:4px">幸せを感じるとき</div><div style="font-size:11px;color:var(--text);line-height:1.6">・新しいことを始めるとき<br>・自由に采配できているとき</div></div>
+          <div style="background:#F5F0FF;border-radius:8px;padding:8px 10px"><div style="font-size:11px;font-weight:700;color:#7A60C0;margin-bottom:4px">苦手とする状況</div><div style="font-size:11px;color:var(--text);line-height:1.6">・時間の制約や規制を受けるとき<br>・古い習慣を押しつけられるとき</div></div>
+        </div>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="background:var(--rose);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px">温情主義派</span>
+          <span style="font-size:14px;font-weight:700;color:var(--rose)">右脳2次元</span>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px">感情・視覚記憶・音楽に関係し、情緒に働く脳の領域</div>
+        <div style="font-size:12px;color:var(--text-m);line-height:1.7;margin-bottom:6px">人の気持ちを察することが得意で、深い人間関係を築くことができます。</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:#FFF3F3;border-radius:8px;padding:8px 10px"><div style="font-size:11px;font-weight:700;color:var(--rose);margin-bottom:4px">幸せを感じるとき</div><div style="font-size:11px;color:var(--text);line-height:1.6">・関係者が幸福を感じているとき<br>・人から頼られたとき</div></div>
+          <div style="background:#F5F0FF;border-radius:8px;padding:8px 10px"><div style="font-size:11px;font-weight:700;color:#7A60C0;margin-bottom:4px">苦手とする状況</div><div style="font-size:11px;color:var(--text);line-height:1.6">・理屈や理論が先行する話題<br>・表情が乏しく目線が合わないとき</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 脳活用度・ストレス耐性の説明 -->
+    <div style="background:var(--card);border-radius:12px;padding:16px;border:1px solid var(--border);margin-top:8px">
+      <div style="font-family:'Noto Serif JP',serif;font-size:15px;font-weight:600;color:var(--text);margin-bottom:14px;padding-bottom:8px;border-bottom:2px solid var(--border)">脳活用度・ストレス耐性について</div>
+      <div style="margin-bottom:12px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:13px;font-weight:700;color:var(--text)">ストレス耐性</span><span style="background:#EEF4FF;color:var(--sky);font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px">理想値 70以上</span></div><div style="font-size:12px;color:var(--text-m);line-height:1.7">ストレスにどれだけ耐えられるかという強さです。ストレスに対する感情のコントロールレベルと、変化への適応力を示します。</div></div>
+      <div style="margin-bottom:12px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:13px;font-weight:700;color:var(--amber)">動物脳プラス</span><span style="background:#FFF9EE;color:var(--amber);font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px">理想値 70〜80</span></div><div style="font-size:12px;color:var(--text-m);line-height:1.7">食欲・性欲など本能に関わる原始的な脳の使い方です。適切に使われれば、脳の発達を促すとても重要な機能になります。</div></div>
+      <div style="margin-bottom:12px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:13px;font-weight:700;color:var(--rose)">動物脳マイナス</span><span style="background:#FFF3F3;color:var(--rose);font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px">理想値 30以下</span></div><div style="font-size:12px;color:var(--text-m);line-height:1.7">ストレスに対して攻撃的（イライラ・怒りなど）または逃避的（不安・悲しみなど）になる感情的な反応です。プラスに働けば、人に対して協力的になったり思いやりを持てるようになります。</div></div>
+      <div style="margin-bottom:14px"><div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:13px;font-weight:700;color:var(--sage)">人間脳</span><span style="background:#F0FAF3;color:var(--sage);font-size:11px;font-weight:700;padding:1px 8px;border-radius:99px">理想値 70以上</span></div><div style="font-size:12px;color:var(--text-m);line-height:1.7">人や社会の役に立てるよう、自分も他者も育てる力です。人間学を学び、寛容さ・協調性・ポジティブな思考を意識して身につけることで、脳の強みを活かす土台になります。</div></div>
+      <div style="background:linear-gradient(135deg,#FFF6EE,#F0FAF3);border-radius:10px;padding:12px 14px;border:1px solid var(--border)">
+        <div style="font-size:13px;font-weight:700;color:var(--primary);margin-bottom:8px">上記4項目が理想値になると</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px">
+          <div style="font-size:11px;color:var(--text);line-height:1.8">・集中力・発想力・洞察力が増加する<br>・自己実現が可能となりやすい<br>・仕事のパフォーマンスが向上する<br>・困難に打ち克つ力が増加する</div>
+          <div style="font-size:11px;color:var(--text);line-height:1.8">・対人関係がより充実する<br>・健康な状態が保たれる<br>・強くて、しなやかな精神が持続する</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="email-status" class="email-status" style="margin-top:10px">📨 結果を送信中...</div>
 
@@ -732,75 +790,36 @@ async function sendEmail(){
 
 async function downloadPDF(){
   const btn=document.getElementById('pdf-btn');
-  if(btn){btn.disabled=true;btn.textContent='生成中...';}
+  btn.disabled=true; btn.textContent='生成中...';
   try{
+    const el=document.getElementById('result-content');
+    const canvas=await html2canvas(el,{scale:1.5,useCORS:true,backgroundColor:'#FDF6EC'});
     const {jsPDF}=window.jspdf;
     const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4'});
     const pw=pdf.internal.pageSize.getWidth();
     const ph=pdf.internal.pageSize.getHeight();
-    const margin=10;
-    const iw=pw-margin*2;
-
-    // ── ページ1：結果 ──
-    const page1=document.getElementById('result-page1');
-    const c1=await html2canvas(page1,{scale:1.8,useCORS:true,backgroundColor:'#FDF6EC'});
-    const ih1=(c1.height*iw)/c1.width;
-    pdf.addImage(c1.toDataURL('image/jpeg',0.88),'JPEG',margin,margin,iw,Math.min(ih1,ph-margin*2));
-
-    // ── ページ2：説明 ──
-    const page2=document.getElementById('result-page2');
-    page2.style.display='block';
-    // テンプレートの${S.form.name}を実際の名前に置換
-    page2.innerHTML=page2.innerHTML.replace('${S.form.name}',S.form.name);
-    await new Promise(r=>setTimeout(r,100));
-    const c2=await html2canvas(page2,{scale:1.8,useCORS:true,backgroundColor:'#FDF6EC'});
-    page2.style.display='none';
-    const ih2=(c2.height*iw)/c2.width;
-    pdf.addPage();
-    pdf.addImage(c2.toDataURL('image/jpeg',0.88),'JPEG',margin,margin,iw,Math.min(ih2,ph-margin*2));
-
+    const iw=pw, ih=(canvas.height*iw)/canvas.width;
+    const imgData=canvas.toDataURL('image/jpeg',0.82);
+    if(ih<=ph){
+      pdf.addImage(imgData,'JPEG',0,0,iw,ih);
+    } else {
+      let left=ih, pos=0;
+      pdf.addImage(imgData,'JPEG',0,pos,iw,ih);
+      left-=ph;
+      while(left>0){pos=left-ih;pdf.addPage();pdf.addImage(imgData,'JPEG',0,pos,iw,ih);left-=ph;}
+    }
     const d=new Date().toLocaleDateString('ja-JP').replace(/\//g,'-');
     pdf.save(`BBrain診断_${S.form.name}_${d}.pdf`);
-  }catch(e){console.error(e);alert('PDF生成に失敗しました。');}
-  if(btn){btn.disabled=false;btn.textContent='📄 PDFをダウンロード';}
+  }catch(e){alert('PDF生成に失敗しました。');}
+  btn.disabled=false; btn.textContent='📄 PDFをダウンロード';
 }
 
+// ══════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════
 
-function restart(){
-  S={phase:'welcome',g:0,si:0,a1:new Array(40).fill(null),a2:new Array(10).fill(null),form:{name:'',email:'',phone:'',org:''}};
-  render();
-}
-
-(async function initApp(){
-  const params=new URLSearchParams(window.location.search);
-  const token=params.get('token');
-  if(!token){S.phase='invalid';S.invalidReason='notfound';render();return;}
-  S.token=token;S.phase='checking';render();
-  try{
-    const controller=new AbortController();
-    const timer=setTimeout(()=>{
-      controller.abort();
-      if(S.phase==='checking'){S.phase='invalid';S.invalidReason='timeout';render();}
-    },10000);
-    const res=await fetch('/api/token-verify',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({token,action:'check'}),
-      signal:controller.signal,
-    });
-    clearTimeout(timer);
-    if(!res.ok){S.phase='invalid';S.invalidReason='error';render();return;}
-    const data=await res.json();
-    if(data.valid){S.tokenValid=true;S.phase='welcome';render();}
-    else{S.phase='invalid';S.invalidReason=data.reason||'notfound';render();}
-  }catch(e){
-    console.error('initApp error:',e.message);
-    if(S.phase==='checking'){S.phase='invalid';S.invalidReason='error';render();}
-  }
-})();
-</script>
-</body>
-</htmlfunction rChecking(){return`
+// ── トークン確認中 ──
+function rChecking(){return`
   <div style="text-align:center;padding:80px 20px">
     <div style="font-size:48px;margin-bottom:16px">🔐</div>
     <div style="font-size:18px;font-weight:700;color:var(--text-m)">アクセスを確認しています...</div>
@@ -826,5 +845,81 @@ function rInvalid(){
     </div>
   </div>`;}
 
+function goForm(){S.phase='form';render();}
 
->
+function submitForm(){
+  const name=document.getElementById('f-name').value.trim();
+  const email=document.getElementById('f-email').value.trim();
+  const phone=document.getElementById('f-phone').value.trim();
+  const org=document.getElementById('f-org').value.trim();
+  const err=document.getElementById('form-err');
+  if(!name){err.textContent='お名前をご入力ください';err.style.display='block';return;}
+  if(!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent='メールアドレスを正しくご入力ください';err.style.display='block';return;}
+  S.form={name,email,phone,org};
+  S.phase='s1'; S.g=0; render();
+}
+
+function pickL1(i,v){
+  S.a1[i]=v;
+  const gi=S.g,st=gi*5,en=Math.min(st+5,40);
+  const qItems=document.querySelectorAll('.q-item');
+  const qi=i-st;
+  if(qItems[qi])qItems[qi].querySelectorAll('.l-btn').forEach((b,bi)=>b.classList.toggle('sel',bi+1===v));
+  const nb=document.querySelector('.nav .btn-p');
+  if(nb)nb.disabled=!S.a1.slice(st,en).every(x=>x!==null);
+}
+function nextS1(){const st=S.g*5,en=Math.min(st+5,40);if(!S.a1.slice(st,en).every(v=>v!==null))return;S.g++;render();}
+function backS1(){if(S.g>0){S.g--;render();}else{S.phase='form';render();}}
+function toS2(){const st=S.g*5,en=Math.min(st+5,40);if(!S.a1.slice(st,en).every(v=>v!==null))return;S.phase='s2';S.si=0;render();}
+
+function pickS2(j){
+  S.a2[S.si]=j;
+  document.querySelectorAll('.opt-card').forEach((el,i)=>el.classList.toggle('sel',i===j));
+  const nb=document.querySelector('.nav .btn-p');
+  if(nb)nb.disabled=false;
+}
+function nextS2(){if(S.a2[S.si]===null)return;S.si++;render();}
+function backS2(){if(S.si>0){S.si--;render();}else{S.phase='s1';S.g=7;render();}}
+function toResult(){
+  if(S.a2[S.si]===null)return;
+  // トークンを使用済みにする
+  if(S.token){
+    fetch('/api/token-verify',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token:S.token, action:'use'}),
+    }).catch(()=>{});
+  }
+  S.phase='result';render();
+}
+function restart(){
+  S={phase:'welcome',g:0,si:0,a1:new Array(40).fill(null),a2:new Array(10).fill(null),form:{name:'',email:'',phone:'',org:''}};
+  render();
+}
+
+(async function initApp(){
+  const params=new URLSearchParams(window.location.search);
+  const token=params.get('token');
+  if(!token){S.phase='invalid';S.invalidReason='notfound';render();return;}
+  S.token=token;S.phase='checking';render();
+  try{
+    const controller=new AbortController();
+    const timer=setTimeout(()=>{controller.abort();S.phase='invalid';S.invalidReason='timeout';render();},10000);
+    const res=await fetch('/api/token-verify',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({token,action:'check'}),
+      signal:controller.signal,
+    });
+    clearTimeout(timer);
+    if(!res.ok){S.phase='invalid';S.invalidReason='error';render();return;}
+    const data=await res.json();
+    if(data.valid){S.tokenValid=true;S.phase='welcome';render();}
+    else{S.phase='invalid';S.invalidReason=data.reason||'notfound';render();}
+  }catch(e){
+    if(S.phase==='checking'){S.phase='invalid';S.invalidReason='error';render();}
+  }
+})();
+</script>
+</body>
+</html>
